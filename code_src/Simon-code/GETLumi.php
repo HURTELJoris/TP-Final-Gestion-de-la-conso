@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Capteurs Luminosité</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h1>Capteurs Luminosité</h1>
@@ -23,7 +24,8 @@
             <th>ID Capteur</th>
             <th>Luminosité</th>
             <th>Date</th>
-            <th>Action</th>
+            <th>Supprimer</th>
+            <th>Modifier</th>
         </tr>
         <!-- Les lignes du tableau seront insérées ici -->
     </table>

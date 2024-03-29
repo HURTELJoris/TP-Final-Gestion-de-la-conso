@@ -24,7 +24,7 @@ connection.connect((err) => {
 });
 
 app.get('/', (req, res) => {
-  const sql = 'SELECT id_capteur, luminosité, date FROM `capteur-luminosité`';
+  const sql = 'SELECT id_capteur, luminosité, date FROM `capteur-luminosité` WHERE id_capteur != 1';
 
   connection.query(sql, (err, results) => {
     if (err) {
