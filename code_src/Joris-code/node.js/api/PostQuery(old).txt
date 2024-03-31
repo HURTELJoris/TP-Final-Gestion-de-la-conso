@@ -1,0 +1,95 @@
+/*
+app.post('/new/Classes/Compteur_Histo', (req, res) => {
+  console.log(req.body);
+  const channelName = req.body.channelName;
+  const subscriberCount = req.body.subscriberCount;
+  const NBRequetes = req.body.NBRequetes;
+
+  
+  
+  
+  // Vous pouvez maintenant traiter les données comme vous le souhaitez
+  // Dans cet exemple, nous les renvoyons simplement au client
+
+  res.json({data : req.body }); // ajouté 'test:'
+
+
+  // Si on a bien reçu toutes les données.
+
+  if(channelName != null && subscriberCount != null && NBRequetes != null)
+  {
+
+  console.log(NBRequetes);
+    let datenow = new Date;
+
+    //console.log(datenow); // "2021-07-28T18:11:11.282Z"
+    //console.log(generateDatabaseDateTime(datenow)); // "2021-07-28 14:11:33"
+    const datenow2 = generateDatabaseDateTime(datenow);
+
+
+    function generateDatabaseDateTime(date) {
+
+        // Ajoute une heure pour passer à l'heure UTC+1
+        date.setHours(date.getHours() + 1);
+        
+      const p = new Intl.DateTimeFormat('en', {
+        year:'numeric',
+        month:'2-digit',
+        day:'2-digit',
+        hour:'2-digit',
+        minute:'2-digit',
+        second:'2-digit',
+        hour12: false,
+        timeZone:'UTC'
+      }).formatToParts(date).reduce((acc, part) => {
+        acc[part.type] = part.value;
+          return acc;
+      }, {});
+
+      return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}:${p.second}`;
+    }
+
+
+
+    connection.query('INSERT INTO `Compteur Histo` (`Nom_chaine`, `Abo_chaine`, `Nb_Requetes`, `Date`) VALUES (?, ?, ?, ?)', [channelName, subscriberCount, NBRequetes, datenow2], (error, results) => {
+      if (error) {
+        console.error('Erreur lors de l\'exécution de la requête :', error);
+        res.status(500).send('Erreur lors de l\'exécution de la requête');
+      } else {
+        // Vous pouvez manipuler les résultats de la requête ici
+        res.status(200).json(results); // Envoie des résultats en tant que réponse JSON
+      }
+    })
+ 
+  }
+   
+});
+*/
+
+
+/* 
+// CONNEXION BDD
+
+const mysql = require('mysql');
+
+// Configuration de la connexnion à la base de données (Lucas)
+const connection = mysql.createConnection({
+  host: '192.168.64.200', // L'hôte de la base de données
+  user : 'root', // Votre nom d'utilisateur MySQL
+  password : 'root', // Votre mot de passe MySQL
+  database : 'TpGPS' // Le nom de votre base de données
+});
+
+// Connexion à la base de données
+connection.connect((error) => {
+  if (error) {
+    console.error('Erreur de connexion à la base de données :', error);
+    throw error;
+  }
+  console.log('Connecté à la base de données MySQL');
+});
+
+*/
+
+// AJOUTER METHODE GET NBREQUETES + CONNEXION BDD
+//INSERT INTO `Compteur Histo`(`Nom_chaine`, `Abo_chaine`, `Nb_Requetes`, `Date`) VALUES ('test',23,325325,'2008-06-01 09:59:59')

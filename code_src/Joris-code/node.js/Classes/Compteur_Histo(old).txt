@@ -1,0 +1,110 @@
+/*
+
+      async getChannelInfo() {
+        return new Promise((resolve, reject) => {
+            const channelUrl = `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${this.channelId}&key=${this.apiKey}`;
+            fetch(channelUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const channelName = data.items[0].snippet.title;
+                    const channelImage = data.items[0].snippet.thumbnails.high.url;
+
+                    /////////////////////
+                    this.channelName = channelName;
+                    /////////////////////
+                    document.getElementById("channelName").textContent = `Nom de la chaîne : ${channelName}`;
+                    document.getElementById("channelImage").src = channelImage;
+
+                    this.sendInfoToCpp(`Nom de la chaîne : ${channelName}`);
+
+                    resolve();
+                });
+
+            const url = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${this.channelId}&key=${this.apiKey}`;
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const subscriberCount = data.items[0].statistics.subscriberCount;
+
+                    //////////////////////
+                    this.subscriberCount = subscriberCount;
+                    /////////////////////
+
+                    document.getElementById("subscriberCount").textContent = `Nombre d'abonnés actuel : ${subscriberCount}`;
+                    this.sendInfoToCpp(`Nombre d'abonnés actuel : ${subscriberCount}`);
+
+                    resolve();
+
+                    
+                    //if(this.channelName != null && this.subscriberCount != null)
+                    //{
+                      //  resolve();
+                    //}
+                    
+                    
+                })
+                .catch(error => {
+                    console.error("Erreur lors de la récupération des informations de la chaîne :", error);
+                    reject(error);
+                });
+        });
+    }
+
+    */
+
+
+
+
+/* 
+    PostToBack() {
+        // Côté client (dans le fichier JavaScript)
+        const dataToSend = {
+            channelName : this.channelName,
+            subscriberCount : Number(this.subscriberCount), //car il est en string
+            NBRequete : this.NBRequete,
+            // ... autres données
+        };
+
+        // Vérifier après l'affectation
+        if (dataToSend.channelName === undefined) {
+            console.error('La propriété channelName est undefined.');
+            return;
+        }
+
+        if (dataToSend.subscriberCount === undefined) {
+            console.error('La propriété subscriberCount est undefined.');
+            return;
+        }
+
+        if (dataToSend.NBRequete === undefined) {
+            console.error('La propriété NBRequete est undefined.');
+            return;
+        }
+
+
+
+
+        console.log('Données envoyées :', dataToSend);
+
+        fetch('http://192.168.65.237:8080/new/Classes/Compteur_Histo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dataToSend),
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('La requête a échoué avec le statut ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Réponse du serveur :', data);
+            })
+            .catch(error => {
+                console.error('Erreur lors de la requête POST:', error);
+            });
+          
+    }
+*/
