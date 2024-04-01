@@ -1,11 +1,47 @@
-// Classe Simulateur qui simule les données d'une carte d'entrée/sortie et calcule les proportions de temps vert.
+const express = require('express');
+const bodyParser = require('body-parser');
+
+// Classe Compteurs qui simule les données d'une carte d'entrée/sortie et calcule les proportions de temps vert.
 
 class Compteurs {
-    // Constructeur de la classe Simulateur.
+    // Constructeur de la classe Compteurs.
     constructor() {
+        this.app = express();
+        this.app.use(bodyParser.json());
+        this.app.use(bodyParser.urlencoded({ extended: true }));
+        this.app.use((req, res, next) => {
+            res.header('Access-Control-Allow-Origin', '*');
+            res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+            next();
+        });
+        this.app.post('/data', (req, res) => this.handlePostRequest(req, res));
+
         this.proportionsTempVertStockees = [];
-        this.MAX_SIZE = 10; // Ajustable au choix
+        // Taille maximale du tableau de toutes les proportion de temps vert stockées. Ajustable au choix et déprendra de l'abonnement de temps pris par l'utilisateur (demander HUGO).
+        this.MAX_SIZE = 10;
         this.previousSourceVerte = null;
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+
+    startServer() {
+        const server = this.app.listen(3000, () => {
+            console.log('Serveur HTTP démarré sur le port 3000');
+        });
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+
+    handlePostRequest(req, res) {
+        const { sourceVerte, tabPowerBox } = req.body;
+
+        // Vérifiez si sourceVerte et tabPowerBox existent dans la requête
+        if (sourceVerte !== undefined && tabPowerBox !== undefined) {
+            this.boucle(sourceVerte, tabPowerBox);
+            res.status(200).send('Données reçues');
+        } else {
+            res.status(400).send('Données invalides');
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -51,10 +87,10 @@ class Compteurs {
     //////////////////////////////////////////////////////////////////////////
 
     //Méthode principale qui simule les données d'entrée/sortie et affiche les résultats en console.
-    boucle() {
+    boucle(sourceVerte, tabPowerBox) {
         console.log(``);
-        const sourceVerte = Math.floor(Math.random() * 2);
-        const tabPowerBox = new Array(8).fill(0).map(() => Math.floor(Math.random() * 2));
+        //const sourceVerte = Math.floor(Math.random() * 2); (UPDATE V2 HTTP)
+        //const tabPowerBox = new Array(8).fill(0).map(() => Math.floor(Math.random() * 2)); (UPDATE V2 HTTP)
 
         console.log(`Valeur de sourceVerte : ${sourceVerte}`);
         console.log(`Valeurs de tabPowerBox : ${JSON.stringify(tabPowerBox)}`);
@@ -87,7 +123,7 @@ class Compteurs {
 
             // Appele de la méthode insertBoxData de l'instance energieRecordAPI
             for (let i = 0; i < 8; i++) {
-                energieRecordAPI.insertBoxData(i + 1, tabPowerBox[i], sourceVerte, moyennesProportions[i]); //problème avec i
+                energieRecordAPI.insertBoxData(i + 1, tabPowerBox[i], sourceVerte, moyennesProportions[i]);
             }
 
         } else {
@@ -95,8 +131,8 @@ class Compteurs {
         }
         this.previousSourceVerte = sourceVerte;
 
-        const interval = Math.random() < 0.5 ? 2000 : 5000;
-        setTimeout(() => this.boucle(), interval);
+        //const interval = Math.random() < 0.5 ? 2000 : 5000; (UPDATE V2 HTTP)
+        //setTimeout(() => this.boucle(), interval); (UPDATE V2 HTTP)
     }
 }
 
@@ -109,6 +145,6 @@ const compteurs = new Compteurs();
 const EnergieRecordAPI = require('./EnergieRecordAPI');
 const energieRecordAPI = new EnergieRecordAPI('192.168.85.131', 'root', 'root', 'Conso', 8080);
 
-
-compteurs.boucle();
+compteurs.startServer();
+//compteurs.boucle(); (UPDATE V2 HTTP)
 energieRecordAPI.listen();
