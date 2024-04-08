@@ -93,7 +93,7 @@
         // Récupération et affichage des données initiales
         (async function () {
             try {
-                const response = await fetch('http://192.168.65.185:8080/');
+                const response = await fetch('http://192.168.65.185:8080/select');
 
                 if (response.ok) {
                     const data = await response.json();

@@ -23,7 +23,7 @@ connection.connect((err) => {
   console.log('Connecté à la base de données avec l\'identifiant ' + connection.threadId);
 });
 
-app.get('/', (req, res) => {
+app.get('/select', (req, res) => {
   const sql = 'SELECT id_capteur, luminosité, date FROM `capteur-luminosité` WHERE id_capteur != 1';
 
   connection.query(sql, (err, results) => {
