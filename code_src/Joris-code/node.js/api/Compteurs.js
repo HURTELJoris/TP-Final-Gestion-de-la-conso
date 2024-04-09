@@ -1,46 +1,32 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+// Importation du module axios pour les requêtes HTTP
+const axios = require('axios');
 
 // Classe Compteurs qui simule les données d'une carte d'entrée/sortie et calcule les proportions de temps vert.
 
 class Compteurs {
-    // Constructeur de la classe Compteurs.
+    // Constructeur de la classe Simulateur.
     constructor() {
-        this.app = express();
-        this.app.use(bodyParser.json());
-        this.app.use(bodyParser.urlencoded({ extended: true }));
-        this.app.use((req, res, next) => {
-            res.header('Access-Control-Allow-Origin', '*');
-            res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-            next();
-        });
-        this.app.post('/data', (req, res) => this.handlePostRequest(req, res));
-
         this.proportionsTempVertStockees = [];
         // Taille maximale du tableau de toutes les proportion de temps vert stockées. Ajustable au choix et déprendra de l'abonnement de temps pris par l'utilisateur (demander HUGO).
         this.MAX_SIZE = 10;
         this.previousSourceVerte = null;
     }
 
-    //////////////////////////////////////////////////////////////////////////
+    /**
+     * Méthode pour communiquer avec l'API située à l'adresse IP 192.168.65.185.
+     *
+     * @param {Array} data - Tableau contenant les données à insérer dans l'API.
+     * @returns {Promise<void>} - Une promesse qui se résout lorsque la requête HTTP est terminée.
+     */
+    async SendBoxDataInAPIToBDD(data) {
+        try {
+            // Envoi d'une requête POST à l'API pour insérer les données
+            const response = await axios.post('http://192.168.65.185:8080/insert', data); // Changer le chemin lorsque Simon aura fait le code pour la box
 
-    startServer() {
-        const server = this.app.listen(3000, () => {
-            console.log('Serveur HTTP démarré sur le port 3000');
-        });
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-
-    handlePostRequest(req, res) {
-        const { sourceVerte, tabPowerBox } = req.body;
-
-        // Vérifiez si sourceVerte et tabPowerBox existent dans la requête
-        if (sourceVerte !== undefined && tabPowerBox !== undefined) {
-            this.boucle(sourceVerte, tabPowerBox);
-            res.status(200).send('Données reçues');
-        } else {
-            res.status(400).send('Données invalides');
+            // Traitement de la réponse de l'API (à personnaliser en fonction de vos besoins)
+            console.log('Réponse de l\'API :', response.data);
+        } catch (error) {
+            console.error('Erreur lors de la communication avec l\'API :', error.message);
         }
     }
 
@@ -87,10 +73,10 @@ class Compteurs {
     //////////////////////////////////////////////////////////////////////////
 
     //Méthode principale qui simule les données d'entrée/sortie et affiche les résultats en console.
-    boucle(sourceVerte, tabPowerBox) {
+    async boucle() {
         console.log(``);
-        //const sourceVerte = Math.floor(Math.random() * 2); (UPDATE V2 HTTP)
-        //const tabPowerBox = new Array(8).fill(0).map(() => Math.floor(Math.random() * 2)); (UPDATE V2 HTTP)
+        const sourceVerte = Math.floor(Math.random() * 2);
+        const tabPowerBox = new Array(8).fill(0).map(() => Math.floor(Math.random() * 2));
 
         console.log(`Valeur de sourceVerte : ${sourceVerte}`);
         console.log(`Valeurs de tabPowerBox : ${JSON.stringify(tabPowerBox)}`);
@@ -121,18 +107,26 @@ class Compteurs {
         if (this.previousSourceVerte !== null && this.previousSourceVerte !== sourceVerte) {
             console.log(`La valeur de sourceVerte a changé : ${this.previousSourceVerte} -> ${sourceVerte}`);
 
-            // Appele de la méthode insertBoxData de l'instance energieRecordAPI
+            // Création du tableau de données à insérer dans l'API
+            const data = [];
             for (let i = 0; i < 8; i++) {
-                energieRecordAPI.insertBoxData(i + 1, tabPowerBox[i], sourceVerte, moyennesProportions[i]);
+                data.push({
+                    num_box: i + 1,
+                    powerbox: tabPowerBox[i],
+                    source_verte: sourceVerte,
+                    proportion_temp_vert: moyennesProportions[i]
+                });
             }
 
+            // Appel de la méthode SendBoxDataInAPIToBDD avec le tableau de données en paramètre
+            await this.SendBoxDataInAPIToBDD(data);
         } else {
             console.log(``);
         }
         this.previousSourceVerte = sourceVerte;
 
-        //const interval = Math.random() < 0.5 ? 2000 : 5000; (UPDATE V2 HTTP)
-        //setTimeout(() => this.boucle(), interval); (UPDATE V2 HTTP)
+        const interval = Math.random() < 0.5 ? 2000 : 5000;
+        setTimeout(() => this.boucle(), interval);
     }
 }
 
@@ -141,10 +135,4 @@ class Compteurs {
 //Création d'une instance de la classe Compteurs et démarrage de la récupération des données des compteurs.
 
 const compteurs = new Compteurs();
-
-const EnergieRecordAPI = require('./EnergieRecordAPI');
-const energieRecordAPI = new EnergieRecordAPI('192.168.85.131', 'root', 'root', 'Conso', 8080);
-
-compteurs.startServer();
-//compteurs.boucle(); (UPDATE V2 HTTP)
-energieRecordAPI.listen();
+compteurs.boucle();
