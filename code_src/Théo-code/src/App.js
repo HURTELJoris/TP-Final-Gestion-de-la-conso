@@ -1,9 +1,8 @@
-// App.js
 import React from 'react';
 import RealTimePowerValues from './components/RealTimePowerValues';
 import RealTimeIntensityValues from './components/RealTimeIntensityValues';
 import EnergyProductionChart from './components/EnergyProductionChart';
-import BrightnessChart from './components/BrightnessChart';
+import GraphiqueLuminosite from './components/GraphiqueLuminosite'; // Import du composant GraphiqueLuminosite
 import UserPowerTracking from './components/UserPowerTracking';
 import UserEDFTracking from './components/UserEDFTracking';
 
@@ -13,7 +12,7 @@ function App() {
       <RealTimePowerValues />
       <RealTimeIntensityValues />
       <EnergyProductionChart />
-      <BrightnessChart />
+      <GraphiqueLuminosite /> 
       <UserPowerTracking />
       <UserEDFTracking />
     </div>
