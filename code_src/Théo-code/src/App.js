@@ -1,20 +1,20 @@
 import React from 'react';
 import RealTimePowerValues from './components/RealTimePowerValues';
-import RealTimeIntensityValues from './components/RealTimeIntensityValues';
+import IntensiteEnReel from './components/IntensiteEnReel';
 import EnergyProductionChart from './components/EnergyProductionChart';
-import GraphiqueLuminosite from './components/GraphiqueLuminosite'; // Import du composant GraphiqueLuminosite
+import GraphiqueLuminosite from './components/GraphiqueLuminosite';
 import UserPowerTracking from './components/UserPowerTracking';
-import UserEDFTracking from './components/UserEDFTracking';
+import UtilisateurEDF from './components/UtilisateurEDF'; 
 
 function App() {
   return (
     <div>
       <RealTimePowerValues />
-      <RealTimeIntensityValues />
+      <IntensiteEnReel/>
       <EnergyProductionChart />
       <GraphiqueLuminosite /> 
       <UserPowerTracking />
-      <UserEDFTracking />
+      <UtilisateurEDF /> 
     </div>
   );
 }

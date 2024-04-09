@@ -1,0 +1,30 @@
+
+
+.user-edf-tracking {
+    margin-top: 20px;
+  }
+  
+  .power-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #ddd;
+  }
+  
+  .power-table th, .power-table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .power-table th {
+    background-color: #f2f2f2;
+  }
+  
+  .power-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  .power-table tr:hover {
+    background-color: #ddd;
+  }
+  
