@@ -1,8 +1,9 @@
 // Importation du module axios pour les requêtes HTTP
 const axios = require('axios');
+// Importation du module net pour les sockets avec le CPP
+const net = require('net');
 
 // Classe Compteurs qui simule les données d'une carte d'entrée/sortie et calcule les proportions de temps vert.
-
 class Compteurs {
     // Constructeur de la classe Simulateur.
     constructor() {
@@ -11,6 +12,58 @@ class Compteurs {
         this.MAX_SIZE = 10;
         this.previousSourceVerte = null;
     }
+
+    //////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Méthode pour écouter les données provenant d'un code C++ via une communication socket.
+     *
+     * @returns {Promise<Object>} - Une promesse qui se résout avec un objet contenant les données reçues du code C++.
+     */
+    async ecouterDonneesCpp() {
+        return new Promise((resolve, reject) => {
+            // Création d'un serveur socket pour écouter les données provenant du code C++
+            const server = net.createServer((socket) => {
+                console.log('Connexion socket établie avec le code C++');
+
+                // Gestion des données reçues du code C++
+                let dataReceived = '';
+                socket.on('data', (data) => {
+                    dataReceived += data.toString();
+                    // Vérifier si toutes les données ont été reçues (à personnaliser en fonction de vos besoins)
+                    const parsedData = JSON.parse(dataReceived);
+                    console.log('Données reçues du code C++ :', dataReceived);
+                    if (parsedData.sourceVerte !== null && parsedData.tabPowerBox !== null && Object.values(parsedData.tabPowerBox).every(value => value !== null)) {
+
+                        resolve(parsedData);
+                    }
+                });
+
+                // Gestion de la fermeture de la connexion socket par le code C++
+                socket.on('end', () => {
+                    console.log('Connexion socket fermée par le code C++');
+                });
+
+                // Gestion des erreurs lors de la communication socket
+                socket.on('error', (error) => {
+                    console.error('Erreur lors de la communication socket avec le code C++ :', error.message);
+                    reject(error);
+                });
+            });
+
+            // Écoute des connexions socket entrantes du code C++
+            server.listen(1234, '192.168.64.88', () => {
+                console.log('Serveur socket en écoute sur l\'adresse IP 192.168.64.88 et le port 1234');
+            });
+
+            // Gestion de la fermeture du serveur socket
+            server.on('close', () => {
+                console.log('Serveur socket fermé');
+            });
+        });
+    }
+
+    //////////////////////////////////////////////////////////////////////////
 
     /**
      * Méthode pour communiquer avec l'API située à l'adresse IP 192.168.65.185.
@@ -74,59 +127,72 @@ class Compteurs {
 
     //Méthode principale qui simule les données d'entrée/sortie et affiche les résultats en console.
     async boucle() {
-        console.log(``);
-        const sourceVerte = Math.floor(Math.random() * 2);
-        const tabPowerBox = new Array(8).fill(0).map(() => Math.floor(Math.random() * 2));
 
-        console.log(`Valeur de sourceVerte : ${sourceVerte}`);
-        console.log(`Valeurs de tabPowerBox : ${JSON.stringify(tabPowerBox)}`);
-        console.log(``);
+        // Attendre que les données soient reçues du code C++ avant de continuer
+        try {
+            const data = await this.ecouterDonneesCpp();
+            const sourceVerte = data.sourceVerte;
+            const tabPowerBox = data.tabPowerBox;
 
-        const proportionsTempVert = this.calculerProportionTempVert(sourceVerte, tabPowerBox);
-        console.log(`Proportions de temps vert : ${JSON.stringify(proportionsTempVert)}`);
-        console.log(``);
-        console.log(`Tableau de proportions : ${JSON.stringify(this.proportionsTempVertStockees)}`);
-        console.log(``);
-
-        const moyennesProportions = new Array(8).fill(0);
-        for (let i = 0; i < this.proportionsTempVertStockees.length; i++) {
-            for (let j = 0; j < this.proportionsTempVertStockees[i].length; j++) {
-                moyennesProportions[j] += this.proportionsTempVertStockees[i][j];
-            }
-        }
-        for (let i = 0; i < moyennesProportions.length; i++) {
-            moyennesProportions[i] /= this.proportionsTempVertStockees.length;
-            moyennesProportions[i] = parseFloat(moyennesProportions[i].toFixed(2));
-        }
-
-        console.log(`Moyennes des proportions de temps vert : ${JSON.stringify(moyennesProportions)}`);
-        console.log(``);
-
-
-        // Vérifier si la valeur de sourceVerte a changé
-        if (this.previousSourceVerte !== null && this.previousSourceVerte !== sourceVerte) {
-            console.log(`La valeur de sourceVerte a changé : ${this.previousSourceVerte} -> ${sourceVerte}`);
-
-            // Création du tableau de données à insérer dans l'API
-            const data = [];
-            for (let i = 0; i < 8; i++) {
-                data.push({
-                    num_box: i + 1,
-                    powerbox: tabPowerBox[i],
-                    source_verte: sourceVerte,
-                    proportion_temp_vert: moyennesProportions[i]
-                });
-            }
-
-            // Appel de la méthode SendBoxDataInAPIToBDD avec le tableau de données en paramètre
-            await this.SendBoxDataInAPIToBDD(data);
-        } else {
             console.log(``);
-        }
-        this.previousSourceVerte = sourceVerte;
+            console.log(`Valeur de sourceVerte : ${sourceVerte}`);
+            console.log(`Valeurs de tabPowerBox : ${JSON.stringify(tabPowerBox)}`);
+            console.log(``);
 
-        const interval = Math.random() < 0.5 ? 2000 : 5000;
-        setTimeout(() => this.boucle(), interval);
+            const proportionsTempVert = this.calculerProportionTempVert(sourceVerte, tabPowerBox);
+            console.log(`Proportions de temps vert : ${JSON.stringify(proportionsTempVert)}`);
+            console.log(``);
+            console.log(`Tableau de proportions : ${JSON.stringify(this.proportionsTempVertStockees)}`);
+            console.log(``);
+
+
+            const moyennesProportions = new Array(8).fill(0);
+            for (let i = 0; i < this.proportionsTempVertStockees.length; i++) {
+                for (let j = 0; j < this.proportionsTempVertStockees[i].length; j++) {
+                    moyennesProportions[j] += this.proportionsTempVertStockees[i][j];
+                }
+            }
+            for (let i = 0; i < moyennesProportions.length; i++) {
+                moyennesProportions[i] /= this.proportionsTempVertStockees.length;
+                moyennesProportions[i] = parseFloat(moyennesProportions[i].toFixed(2));
+            }
+
+            console.log(`Moyennes des proportions de temps vert : ${JSON.stringify(moyennesProportions)}`);
+            console.log(``);
+
+
+            // Vérifier si la valeur de sourceVerte a changé
+            if (this.previousSourceVerte !== null && this.previousSourceVerte !== sourceVerte) {
+                console.log(`La valeur de sourceVerte a changé : ${this.previousSourceVerte} -> ${sourceVerte}`);
+
+                // Création du tableau de données à insérer dans l'API
+                const data = [];
+                for (let i = 0; i < 8; i++) {
+                    data.push({
+                        num_box: i + 1,
+                        powerbox: tabPowerBox[i],
+                        source_verte: sourceVerte,
+                        proportion_temp_vert: moyennesProportions[i]
+                    });
+                }
+
+                // Appel de la méthode SendBoxDataInAPIToBDD avec le tableau de données en paramètre
+                await this.SendBoxDataInAPIToBDD(data);
+            } else {
+                console.log(``);
+            }
+            this.previousSourceVerte = sourceVerte;
+
+            // Appeler à nouveau la méthode boucle() lorsque la promesse de ecouterDonneesCpp() est résolue
+            this.ecouterDonneesCpp().then(() => this.boucle());
+
+        } catch (error) {
+            console.error('Erreur lors de la réception des données provenant du code C++ :', error.message);
+            return;
+        }
+
+        // const interval = Math.random() < 0.5 ? 2000 : 5000;
+        // setTimeout(() => this.boucle(), interval);
     }
 }
 
@@ -135,4 +201,4 @@ class Compteurs {
 //Création d'une instance de la classe Compteurs et démarrage de la récupération des données des compteurs.
 
 const compteurs = new Compteurs();
-compteurs.boucle();
+compteurs.ecouterDonneesCpp().then(() => compteurs.boucle());

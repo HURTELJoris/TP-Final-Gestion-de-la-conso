@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34607.119
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CARTE E.S", "CARTE E.S\CARTE E.S.vcxproj", "{BB7C1EC3-114E-4FF7-AD51-CD2AEC3BCFB5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BB7C1EC3-114E-4FF7-AD51-CD2AEC3BCFB5}.Debug|x64.ActiveCfg = Debug|x64
+		{BB7C1EC3-114E-4FF7-AD51-CD2AEC3BCFB5}.Debug|x64.Build.0 = Debug|x64
+		{BB7C1EC3-114E-4FF7-AD51-CD2AEC3BCFB5}.Debug|x86.ActiveCfg = Debug|Win32
+		{BB7C1EC3-114E-4FF7-AD51-CD2AEC3BCFB5}.Debug|x86.Build.0 = Debug|Win32
+		{BB7C1EC3-114E-4FF7-AD51-CD2AEC3BCFB5}.Release|x64.ActiveCfg = Release|x64
+		{BB7C1EC3-114E-4FF7-AD51-CD2AEC3BCFB5}.Release|x64.Build.0 = Release|x64
+		{BB7C1EC3-114E-4FF7-AD51-CD2AEC3BCFB5}.Release|x86.ActiveCfg = Release|Win32
+		{BB7C1EC3-114E-4FF7-AD51-CD2AEC3BCFB5}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3B210EEB-9D4E-4111-9DE4-636C20E6E6D3}
+	EndGlobalSection
+EndGlobal
