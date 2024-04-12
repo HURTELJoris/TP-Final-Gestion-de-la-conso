@@ -1,74 +1,122 @@
-// CARTE E.S.cpp : Ce fichier contient la fonction 'main'. L'exécution du programme commence et se termine à cet endroit.
-//
-
 #include <iostream>
-#include <string>
 #include <boost/asio.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <thread>
+#include <chrono>
 
 using boost::asio::ip::tcp;
-using namespace std;
+
+// Creation d un objet boost::property_tree::ptree pour stocker les donnees a envoyer
+boost::property_tree::ptree data;
+
+bool envoyerDonnees(tcp::socket& socket, boost::property_tree::ptree& data) {
+    
+    //boost::property_tree::ptree data;
+
+    // Generation aleatoire des donnees (a personnaliser en fonction de vos besoins)
+    int sourceVerte = rand() % 2;
+    int tabPowerBox[8];
+    for (int i = 0; i < 8; i++) {
+        tabPowerBox[i] = rand() % 2;
+    }
+
+    // Ajout des donnees a l objet boost::property_tree::ptree
+    data.put("sourceVerte", sourceVerte);
+    for (int i = 0; i < 8; i++) {
+        data.put("tabPowerBox." + std::to_string(i), tabPowerBox[i]);
+    }
+
+    // Conversion de l objet boost::property_tree::ptree en chaîne de caracteres JSON
+    std::stringstream ss;
+    boost::property_tree::write_json(ss, data, false);
+    std::string jsonData = ss.str();
+
+    // Debogage : affichage des donnees a envoyer
+    std::cout << "Donnees a envoyer : " << jsonData;
+
+    // Envoi des donnees au serveur Node.js
+    boost::system::error_code error;
+    boost::asio::write(socket, boost::asio::buffer(jsonData), error);
+
+    if (error) {
+        std::cerr << "Erreur lors de l envoi des donnees au serveur Node.js : " << std::endl << std::endl << error.message() << std::endl << std::endl;
+
+        std::cout << "Stockees : " << jsonData;
+
+        return false;
+    }
+    else {
+        std::cout << "Donnees envoyees avec succes" << std::endl << std::endl;
+
+        std::stringstream ss;
+        boost::property_tree::write_json(ss, data, false);
+        std::string jsonDataBeforeClear = ss.str();
+        std::cout << "Donnees avant nettoyage : " << jsonDataBeforeClear << std::endl;
+
+        data.clear();
+
+        ss.str(""); // effacer le contenu de ss
+        ss.clear(); // réinitialiser ss
+
+        boost::property_tree::write_json(ss, data, false);
+        std::string jsonDataAfterClear = ss.str();
+        std::cout << "Donnees apres nettoyage : " << jsonDataAfterClear << std::endl;
+
+
+        return true;
+    }
+}
 
 int main() {
     try {
-        // Création d'un objet boost::asio::io_service
-        boost::asio::io_service io_service;
+        // Creation d un objet boost::asio::io_context
+        boost::asio::io_context io_context;
 
-        // Création d'un socket TCP
-        tcp::socket socket(io_service);
+        // Creation d un socket TCP
+        tcp::socket socket(io_context);
 
-        // Connexion au serveur Node.js
-        tcp::endpoint endpoint(boost::asio::ip::address::from_string("192.168.64.88"), 1234);
-        socket.connect(endpoint);
+        while (true) {
+            // Tentative de connexion au serveur Node.js
+            tcp::endpoint endpoint(boost::asio::ip::address::from_string("192.168.64.88"), 1234);
+            boost::system::error_code errorConnect;
+            socket.connect(endpoint, errorConnect);
 
-        // Création d'un objet boost::property_tree::ptree pour stocker les données à envoyer
-        boost::property_tree::ptree data;
+            // Debogage : affichage d un message de connexion reussie ou echouee
+            if (!errorConnect) {
+                std::cout << "Connexion reussie au serveur Node.js" << std::endl << std::endl;
 
-        // Génération aléatoire des données (à personnaliser en fonction de vos besoins)
-        int sourceVerte = rand() % 2;
-        int tabPowerBox[8];
-        for (int i = 0; i < 8; i++) {
-            tabPowerBox[i] = rand() % 2;
+                bool errorr = true;
+                // Boucle d envoi des donnees toutes les 5 secondes
+                while (errorr) {
+                    std::this_thread::sleep_for(std::chrono::seconds(5));
+                    errorr = envoyerDonnees(socket, data);
+                    
+                }
+            }
+            else {
+                std::cerr << "Echec de la connexion au serveur Node.js : " << std::endl << errorConnect.message() << std::endl << std::endl;
+
+                bool errorr = true;
+                // Boucle d envoi des donnees toutes les 5 secondes
+                while (errorr) {
+                    std::this_thread::sleep_for(std::chrono::seconds(5));
+                    errorr = envoyerDonnees(socket, data);
+
+                }
+            }
+
+            // Debogage : affichage d un message de tentative de reconnexion
+            std::cout << std::endl << "Tentative de reconnexion au serveur Node.js dans 5 secondes..." << std::endl << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+
+            // Fermeture du socket
+            socket.close();
         }
-
-        // Ajout des données à l'objet boost::property_tree::ptree
-        data.put("sourceVerte", sourceVerte);
-        for (int i = 0; i < 8; i++) {
-            data.put("tabPowerBox." + to_string(i), tabPowerBox[i]);
-        }
-
-        // Conversion de l'objet boost::property_tree::ptree en chaîne de caractères JSON
-        stringstream ss;
-        boost::property_tree::write_json(ss, data, false);
-        string jsonData = ss.str();
-
-        // Envoi des données au serveur Node.js
-        boost::system::error_code error;
-        boost::asio::write(socket, boost::asio::buffer(jsonData), error);
-        if (error) {
-            cerr << "Erreur lors de l'envoi des données au serveur Node.js : " << error.message() << endl;
-            return 1;
-        }
-
-        // Fermeture du socket
-        socket.close();
     }
     catch (std::exception& e) {
-        cerr << "Erreur lors de la communication avec le serveur Node.js : " << e.what() << endl;
+        std::cerr << "Erreur lors de la communication avec le serveur Node.js : " << e.what() << std::endl;
         return 1;
     }
 
     return 0;
 }
-
-
-// Exécuter le programme : Ctrl+F5 ou menu Déboguer > Exécuter sans débogage
-// Déboguer le programme : F5 ou menu Déboguer > Démarrer le débogage
-
-// Astuces pour bien démarrer : 
-//   1. Utilisez la fenêtre Explorateur de solutions pour ajouter des fichiers et les gérer.
-//   2. Utilisez la fenêtre Team Explorer pour vous connecter au contrôle de code source.
-//   3. Utilisez la fenêtre Sortie pour voir la sortie de la génération et d'autres messages.
-//   4. Utilisez la fenêtre Liste d'erreurs pour voir les erreurs.
-//   5. Accédez à Projet > Ajouter un nouvel élément pour créer des fichiers de code, ou à Projet > Ajouter un élément existant pour ajouter des fichiers de code existants au projet.
-//   6. Pour rouvrir ce projet plus tard, accédez à Fichier > Ouvrir > Projet et sélectionnez le fichier .sln.
