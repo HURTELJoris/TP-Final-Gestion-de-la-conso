@@ -38,7 +38,7 @@
             const date = document.getElementById('date').value;
 
             try {
-                const response = await fetch('http://192.168.65.185:8080/insert', {
+                const response = await fetch('http://192.168.65.12:8080/insert', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -58,7 +58,7 @@
 
         async function deleteRow(id) {
             try {
-                const response = await fetch('http://192.168.65.185:8080/delete/' + id, { method: 'DELETE' });
+                const response = await fetch('http://192.168.65.12:8080/delete/' + id, { method: 'DELETE' });
 
                 if (response.ok) {
                     location.reload(); // Recharge la page pour mettre à jour le tableau
@@ -72,7 +72,7 @@
 
         async function updateLuminosite(id, luminosite) {
           try {
-            const response = await fetch(`http://192.168.65.185:8080/update/${id}`, {
+            const response = await fetch(`http://192.168.65.12:8080/update/${id}`, {
               method: 'PUT',
               headers: {
                 'Content-Type': 'application/json'
@@ -93,7 +93,7 @@
         // Récupération et affichage des données initiales
         (async function () {
             try {
-                const response = await fetch('http://192.168.65.185:8080/select');
+                const response = await fetch('http://192.168.65.12:8080/select');
 
                 if (response.ok) {
                     const data = await response.json();
