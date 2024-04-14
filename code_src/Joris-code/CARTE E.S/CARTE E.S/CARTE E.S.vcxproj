@@ -137,6 +137,9 @@
   <ItemGroup>
     <ClCompile Include="CARTE E.S.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CARTE E.S.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
