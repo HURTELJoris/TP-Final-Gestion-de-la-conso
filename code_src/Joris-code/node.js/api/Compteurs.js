@@ -18,7 +18,7 @@ class Compteurs {
 
         // Fichier qui gère les adresses sur lesquelles POST/GET
         fs.readFile("./config.json", "utf8", (error, data) => {
-            if(error) console.log(error);
+            if (error) console.log(error);
             assert(!error); // Quitte si erreur de chargement du fichier de configuration.
             this.config = JSON.parse(data);
 
@@ -81,8 +81,8 @@ class Compteurs {
         });
 
         // Écoute des connexions socket entrantes du code C++
-        server.listen(1234, '192.168.64.88', () => {
-            console.log('Serveur socket en écoute sur l\'adresse IP 192.168.64.88 et le port 1234');
+        server.listen(1234, '192.168.85.128', () => {
+            console.log('Serveur socket en écoute sur l\'adresse IP 192.168.85.128 et le port 1234');
         });
 
         // Gestion de la fermeture du serveur socket
@@ -94,40 +94,21 @@ class Compteurs {
     //////////////////////////////////////////////////////////////////////////
 
     /**
-     * Méthode pour communiquer avec l'API située à l'adresse IP 192.168.65.185.
+     * Méthode pour envoyer des données de box à une API spécifiée.
      *
-     * @param {Array} data - Tableau contenant les données à insérer dans l'API.
+     * @param {string} config - URL de l'API.
+     * @param {Array} data - Tableau contenant les données de box à envoyer à l'API.
      * @returns {Promise<void>} - Une promesse qui se résout lorsque la requête HTTP est terminée.
      */
-    async SendBoxDataInAPIToBDD(data) {
+    async SendBoxDataToAPI(config, data) {
         try {
-            // Envoi d'une requête POST à l'API pour insérer les données
-            const response = await axios.post(this.config.APICallbackURLBDD, data); // Changer le chemin lorsque Simon aura fait le code pour la box
+            // Envoi d'une requête POST à l'API avec les données de box
+            const response = await axios.post(config, data); // Changer le chemin lorsque Simon et Hassan auront fait le code pour la box
 
             console.log('Réponse de l\'API :', response.data);
         } catch (error) {
             console.error('Erreur lors de la communication avec l\'API :', error.message);
-            console.log(``);
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Méthode pour communiquer avec l'API située à l'adresse IP 192.168.65.105.
-     *
-     * @param {Array} data - Tableau contenant les données à insérer dans l'API.
-     * @returns {Promise<void>} - Une promesse qui se résout lorsque la requête HTTP est terminée.
-     */
-    async SendBoxDataInAPIAccesAbri(data) {
-        try {
-            // Envoi d'une requête POST à l'API pour insérer les données
-            const response = await axios.post(this.config.APICallbackURLAccesAbris, data); // Changer le chemin lorsque Simon aura fait le code pour la box
-
-            console.log('Réponse de l\'API :', response.data);
-        } catch (error) {
-            console.error('Erreur lors de la communication avec l\'API :', error.message);
-            console.log(``);
+            console.log('');
         }
     }
 
@@ -175,7 +156,7 @@ class Compteurs {
 
     /**
     * Méthode principale qui simule les données d'entrée/sortie et affiche les résultats en console.
-    * @param {Object} data - Objet contenant les données reçues du code C++.
+    * @param {Object} dataCPP - Objet contenant les données reçues du code C++.
     * @returns {Promise<void>} - Une promesse qui se résout lorsque les données ont été traitées et affichées en console.
     */
 
@@ -223,7 +204,7 @@ class Compteurs {
 
             // Vérifier si la valeur de sourceVerte a changé. Si oui, on ajoute les données en BDD grâce à l'API de Simon.
             if (this.previousSourceVerte !== null && this.previousSourceVerte !== sourceVerte) {
-               
+
                 console.log(`La valeur de sourceVerte a changé : ${this.previousSourceVerte} -> ${sourceVerte}`);
 
                 // Création du tableau de données à insérer dans l'API
@@ -238,7 +219,7 @@ class Compteurs {
                 }
 
                 // Appel de la méthode SendBoxDataInAPIToBDD avec le tableau de données en paramètre
-                await this.SendBoxDataInAPIToBDD(dataAPI);
+                await this.SendBoxDataToAPI(this.config.APICallbackURLBDD, dataAPI);
             } else {
                 console.log(``);
             }
@@ -246,7 +227,7 @@ class Compteurs {
 
             // Vérifier si une des valeurs parmis toutes les valeurs a changé. Si oui, envoie les données à l'API de Hassan (Groupe Gestion Accès Abris).
             if ((this.previousSourceVerte !== null && this.previousSourceVerte !== sourceVerte) || (this.previoustabPowerBox !== null && this.previoustabPowerBox !== tabPowerBox)) {
-                
+
                 console.log(`Une des valeurs a changé : ${this.previousSourceVerte} -> ${sourceVerte}`);
                 console.log(`Une des valeurs a changé : ${JSON.stringify(this.previoustabPowerBox)} -> ${JSON.stringify(tabPowerBox)}`);
 
@@ -254,13 +235,14 @@ class Compteurs {
                 const dataAPIAccesAbri = [];
                 for (let i = 0; i < 8; i++) {
                     dataAPIAccesAbri.push({
+                        num_box: i + 1,
                         PuissanceVerte: sourceVerte,
                         id_statut_box: tabPowerBox[i]
                     });
                 }
 
                 // Appel de la méthode SendBoxDataInAPIAccesAbri avec le tableau de données en paramètre
-                await this.SendBoxDataInAPIAccesAbri(dataAPIAccesAbri);
+                await this.SendBoxDataToAPI(this.config.APICallbackURLAccesAbris, dataAPIAccesAbri);
             } else {
                 console.log(``);
             }
