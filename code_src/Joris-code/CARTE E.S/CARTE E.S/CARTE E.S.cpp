@@ -42,7 +42,7 @@ void CarteES::connectAndSend() {
             std::cout << std::endl << "Tentative de reconnexion au serveur Node.js dans 5 secondes..." << std::endl << std::endl;
             std::this_thread::sleep_for(std::chrono::seconds(4));
 
-            
+
             socket.close();
         }
     }
@@ -81,6 +81,13 @@ bool CarteES::sendData(tcp::socket& socket) {
     }
     std::cout << jsonData;
     std::cout << std::endl;
+
+    // Si la file d'attente est pleine, retirez l'élément le plus ancien
+    if (dataQueue_.size() >= maxQueueSize) {
+        dataQueue_.pop_front();
+        std::cout << "FILE ATTENTE PLEINE CONNARD" << std::endl;
+    }
+
 
     // Si la file d'attente n'est pas vide, on ajoute les nouvelles données à la file d'attente
     bool con = true;
@@ -130,7 +137,7 @@ bool CarteES::sendData(tcp::socket& socket) {
 
 int main() {
     CarteES sender("192.168.85.128", 1234);
-    sender.connectAndSend(); 
+    sender.connectAndSend();
 
     return 0;
 }

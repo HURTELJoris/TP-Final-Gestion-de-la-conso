@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{f7761865-9fc5-4e67-a6b4-f5ab10f74df9}</ProjectGuid>
+    <ProjectGuid>{e7ee7d91-56c0-4839-84d8-9ecbbbd0ecc7}</ProjectGuid>
     <RootNamespace>CARTEES</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>

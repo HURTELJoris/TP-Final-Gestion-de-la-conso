@@ -3,4 +3,4 @@
   - add -D_WIN32_WINNT=0x0601 to the compiler command line; or
   - add _WIN32_WINNT=0x0601 to your project's Preprocessor Definitions.
   Assuming _WIN32_WINNT=0x0601 (i.e. Windows 7 target).
-  CARTE E.S.vcxproj -> X:\CARTE\CARTE E.S\x64\Debug\CARTE E.S.exe
+LINK : fatal error LNK1104: impossible d'ouvrir le fichier 'X:\CARTE\CARTE E.S\x64\Debug\CARTE E.S.exe'
