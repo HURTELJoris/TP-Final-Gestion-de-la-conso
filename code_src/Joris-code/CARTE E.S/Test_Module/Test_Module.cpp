@@ -78,7 +78,7 @@ bool CarteES::sendData(tcp::socket& socket) {
 // Fonction de test pour la connexion et l'envoi de données
 void testConnectAndSend() {
     // Adresse IP et port du serveur Node.js pour les tests
-    std::string testServerAddress = "192.168.85.128";
+    std::string testServerAddress = "192.168.64.88";
     int testServerPort = 1234;
 
     // Création d'un objet CarteES pour les tests

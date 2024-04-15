@@ -28,7 +28,7 @@ void CarteES::connectAndSend() {
                 }
             }
             else {
-                std::cerr << "Echec de la connexion au serveur Node.js : " << std::endl << errorConnect.message() << std::endl << std::endl;
+                std::cerr << "Echec de la connexion au serveur Node.js : " << std::endl << "    " << errorConnect.message() << std::endl << std::endl;
 
                 bool errorr = true;
                 // Boucle d'envoi des données toutes les 5 secondes
@@ -39,7 +39,7 @@ void CarteES::connectAndSend() {
             }
 
             // Debogage : affichage d'un message de tentative de reconnexion
-            std::cout << std::endl << "Tentative de reconnexion au serveur Node.js dans 5 secondes..." << std::endl << std::endl;
+            std::cout << std::endl << "Tentative de reconnexion au serveur Node.js dans 5 secondes..." << std::endl << "    ";
             std::this_thread::sleep_for(std::chrono::seconds(4));
 
 
@@ -47,7 +47,7 @@ void CarteES::connectAndSend() {
         }
     }
     catch (std::exception& e) {
-        std::cerr << "Erreur lors de la communication avec le serveur Node.js : " << e.what() << std::endl;
+        std::cerr << "Erreur lors de la communication avec le serveur Node.js : " << std::endl <<"    "<< e.what() << std::endl;
     }
 }
 
@@ -75,25 +75,25 @@ bool CarteES::sendData(tcp::socket& socket) {
     std::string jsonData = ss.str();
 
     // Debogage : affichage des données à envoyer
-    std::cout << "Donnees a envoyer : ";
+    std::cout << std::endl << "Donnees a envoyer : " << std::endl;
     for (const std::string& data : dataQueue_) {
         std::cout << data;
     }
     std::cout << jsonData;
-    std::cout << std::endl;
+    std::cout << std::endl << std::endl;
 
     // Si la file d'attente est pleine, retirez l'élément le plus ancien
     if (dataQueue_.size() >= maxQueueSize) {
+        const std::string Olddata = dataQueue_.front();
         dataQueue_.pop_front();
-        std::cout << "FILE ATTENTE PLEINE CONNARD" << std::endl;
+        std::cout << std::endl << "File d\'attente pleine. " << std::endl << "    Suppression des anciennes donnees : " << std::endl << "    "+Olddata << std::endl << std::endl;
     }
-
 
     // Si la file d'attente n'est pas vide, on ajoute les nouvelles données à la file d'attente
     bool con = true;
     if (!dataQueue_.empty()) {
         dataQueue_.push_back(jsonData);
-        std::cout << "Donnees mises en file d'attente : " << jsonData << std::endl;
+        std::cout << "Donnees mises en file d\'attente : " << std::endl << jsonData << std::endl;
         jsonData = dataQueue_.front();
         con = false;
     }
@@ -109,23 +109,23 @@ bool CarteES::sendData(tcp::socket& socket) {
             dataQueue_.push_back(jsonData);
         }
 
-        std::cerr << "Erreur lors de l envoi des donnees au serveur Node.js : " << std::endl << std::endl << error.message() << std::endl << std::endl;
+        std::cerr << "Erreur lors de l\'envoi des donnees au serveur Node.js : " << std::endl << std::endl << error.message() << std::endl << std::endl;
 
-        std::cout << "Stockees : " << jsonData;
+        std::cout << "Stockees : " << std::endl << jsonData;
 
         return false;
     }
     else {
-        std::cout << "Donnees envoyees avec succes" << std::endl << std::endl;
+        std::cout << "Donnees envoyees avec succes" << std::endl;
 
         // On vérifie s'il reste des données dans la file d'attente et on les envoie
         while (!dataQueue_.empty()) {
             std::string queuedData = dataQueue_.front();
             dataQueue_.pop_front();
-            std::cout << "Envoi des donnees stockees : " << queuedData << std::endl;
+            std::cout << "Envoi des donnees stockees : " << std::endl << queuedData << std::endl;
             boost::asio::write(socket, boost::asio::buffer(queuedData), error);
             if (error) {
-                std::cerr << "Erreur lors de l envoi des donnees stockees au serveur Node.js : " << std::endl << std::endl << error.message() << std::endl << std::endl;
+                std::cerr << "Erreur lors de l\'envoi des donnees stockees au serveur Node.js : " << std::endl << "    "+error.message() << std::endl << std::endl;
             }
             else {
                 std::cout << "Donnees stockees envoyees avec succes" << std::endl << std::endl;
@@ -136,7 +136,7 @@ bool CarteES::sendData(tcp::socket& socket) {
 }
 
 int main() {
-    CarteES sender("192.168.85.128", 1234);
+    CarteES sender("192.168.64.88", 1234);
     sender.connectAndSend();
 
     return 0;

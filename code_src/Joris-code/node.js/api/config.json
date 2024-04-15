@@ -1,4 +1,4 @@
 {
-    "APICallbackURLAccesAbris":"http://192.168.85.128:8080/insertAcces",
-    "APICallbackURLBDD":"http://192.168.85.128:8080/insert"
+    "APICallbackURLAccesAbris":"http://192.168.65.105:5001/insert",
+    "APICallbackURLBDD":"http://192.168.65.185:8080/insert"
 }

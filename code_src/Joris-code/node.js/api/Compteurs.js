@@ -81,8 +81,8 @@ class Compteurs {
         });
 
         // Écoute des connexions socket entrantes du code C++
-        server.listen(1234, '192.168.85.128', () => {
-            console.log('Serveur socket en écoute sur l\'adresse IP 192.168.85.128 et le port 1234');
+        server.listen(1234, '192.168.64.88', () => {
+            console.log('Serveur socket en écoute sur l\'adresse IP 192.168.64.88 et le port 1234');
         });
 
         // Gestion de la fermeture du serveur socket
