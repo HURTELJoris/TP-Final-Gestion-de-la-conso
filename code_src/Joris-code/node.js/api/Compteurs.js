@@ -259,7 +259,7 @@ class Compteurs {
 
 //////////////////////////////////////////////////////////////////////////
 
-//Création d'une instance de la classe Compteurs et démarrage de la récupération des données des compteurs.
+//Création d'une instance de la classe Compteurs et démarrage de la récupération des données des compteurs. e
 
 const compteurs = new Compteurs();
 compteurs.ecouterDonneesCpp();
