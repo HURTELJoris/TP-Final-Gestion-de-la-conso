@@ -11,6 +11,8 @@
 #include <chrono> 
 #include <thread> 
 
+#include <ctime>
+
 using boost::asio::ip::tcp; // Utilisation de l'espace de noms TCP de Boost.Asio
 
 class CarteES {
@@ -22,6 +24,8 @@ public:
 
     // Méthode pour établir la connexion avec le serveur Node.js et envoyer les données
     bool connectAndSend();
+    //Méthode pour créer un string de la date actuelle au format SQL DATETIME
+    std::string createDateTime();
 
 private:
     // Méthode pour envoyer des données au serveur Node.js

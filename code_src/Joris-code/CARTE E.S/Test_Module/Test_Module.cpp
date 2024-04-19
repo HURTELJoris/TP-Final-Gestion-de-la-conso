@@ -6,6 +6,27 @@
 CarteES::CarteES(const std::string& serverAddress, int serverPort)
     : endpoint_(boost::asio::ip::address::from_string(serverAddress), serverPort) {}
 
+//Méthode pour créer un string de la date actuelle au format SQL DATETIME
+std::string CarteES::createDateTime()
+{
+    std::time_t t = std::time(nullptr);
+    // Struct tm pour stocker la date et l'heure locale
+    std::tm now;
+   
+    #ifdef _MSC_VER
+    localtime_s(&now, &t);
+    #else
+    localtime_r(&t, &now);
+    #endif
+
+    std::ostringstream oss;
+    oss << std::put_time(&now, "%Y-%m-%d %H:%M:%S");
+
+    return oss.str();
+};
+
+
+
 // Méthode pour établir la connexion avec le serveur Node.js et envoyer les données
 bool CarteES::connectAndSend() {
     try {
@@ -42,23 +63,33 @@ bool CarteES::sendData(tcp::socket& socket) {
     boost::property_tree::ptree data;
 
     // Génération aléatoire des données (en attendant les vraies données de la carte E/S)
-    int sourceVerte = rand() % 2;
+    int sourceVerte = rand() % 2; //CHANGER LA VALEUR DE 2 A 1 POUR ENVOYER UN 0
     int tabPowerBox[8];
     for (int i = 0; i < 8; i++) {
         tabPowerBox[i] = rand() % 2;
     }
-
+    std::string DateTime = createDateTime();
+    //std::cout << DateTime;
     // Ajout des données à l'objet boost::property_tree::ptree
     data.put("sourceVerte", sourceVerte);
     for (int i = 0; i < 8; i++) {
         data.put("tabPowerBox." + std::to_string(i), tabPowerBox[i]);
     }
+    data.put("date", DateTime);
 
     // Conversion de l'objet boost::property_tree::ptree en chaîne de caracteres JSON
     std::stringstream ss;
     boost::property_tree::write_json(ss, data, false);
     std::string jsonData = ss.str();
 
+
+    // Debogage : affichage des données à envoyer
+    std::cout << std::endl << "Donnees a envoyer : " << std::endl;
+    for (const std::string& data : dataQueue_) {
+        std::cout << data;
+    }
+    std::cout << jsonData;
+    std::cout << std::endl << std::endl;
 
     // Envoi des données au serveur Node.js
     boost::system::error_code error;
