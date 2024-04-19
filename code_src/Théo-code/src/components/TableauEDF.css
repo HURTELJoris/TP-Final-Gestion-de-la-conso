@@ -1,0 +1,29 @@
+/* Styles pour le tableau */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+/* Styles pour l'en-tête du tableau */
+th {
+  background-color: #f2f2f2;
+  padding: 8px;
+  text-align: left;
+}
+
+/* Styles pour les cellules du tableau */
+td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Styles pour les lignes impaires */
+tr:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+
+/* Styles pour les lignes au survol */
+tr:hover {
+  background-color: #e9e9e9;
+}

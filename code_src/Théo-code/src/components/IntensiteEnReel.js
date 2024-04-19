@@ -19,10 +19,25 @@ function IntensiteEnReel() {
     setUnit(newUnit);
   };
 
+  let displayIntensity;
+  switch (unit) {
+    case 'A':
+      displayIntensity = intensity + ' A';
+      break;
+    case 'mA':
+      displayIntensity = (intensity * 1000).toFixed(2) + ' mA';
+      break;
+    case 'µA':
+      displayIntensity = (intensity * 1000000).toFixed(2) + ' µA';
+      break;
+    default:
+      displayIntensity = intensity + ' A';
+  }
+
   return (
     <div className="intensite-container">
       <h2>Afficher les valeurs de l'intensité des panneaux photovoltaïques</h2>
-      <p>Intensité en temps réel : {intensity} {unit}</p>
+      <p>Intensité en temps réel : {displayIntensity}</p>
       <p>Unité :
         <button onClick={() => changeUnit('A')}>A</button>
         <button onClick={() => changeUnit('mA')}>mA</button>
