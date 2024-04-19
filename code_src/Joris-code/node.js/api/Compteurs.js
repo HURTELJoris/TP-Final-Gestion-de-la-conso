@@ -169,6 +169,7 @@ class Compteurs {
             //console.log('data.sourceVerte', dataCPP.sourceVerte);
             const sourceVerte = dataCPP.sourceVerte;
             const tabPowerBox = dataCPP.tabPowerBox;
+            const date = dataCPP.date;
 
             //console.log(typeof (sourceVerte));
 
@@ -201,6 +202,7 @@ class Compteurs {
             console.log(`Moyennes des proportions de temps vert : ${JSON.stringify(moyennesProportions)}`);
             console.log(``);
 
+            /* */
 
             // Vérifier si la valeur de sourceVerte a changé. Si oui, on ajoute les données en BDD grâce à l'API de Simon.
             if (this.previousSourceVerte !== null && this.previousSourceVerte !== sourceVerte) {
@@ -209,14 +211,15 @@ class Compteurs {
 
                 // Création du tableau de données à insérer dans l'API
                 const dataAPI = [];
-                for (let i = 0; i < 8; i++) {
-                    dataAPI.push({
-                        num_box: i + 1,
-                        powerbox: tabPowerBox[i],
-                        source_verte: sourceVerte,
-                        proportion_temp_vert: moyennesProportions[i]
-                    });
-                }
+
+                dataAPI.push({
+                    powerbox: JSON.stringify(tabPowerBox),
+                    source_verte: sourceVerte,
+                    date: date,
+                    proportion_temp_vert: JSON.stringify(moyennesProportions)
+                });
+                //console.log(dataAPI[0]);
+                //console.table(dataAPI);
 
                 // Appel de la méthode SendBoxDataInAPIToBDD avec le tableau de données en paramètre
                 await this.SendBoxDataToAPI(this.config.APICallbackURLBDD, dataAPI);
@@ -233,13 +236,14 @@ class Compteurs {
 
                 // Création du tableau de données à insérer dans l'API
                 const dataAPIAccesAbri = [];
-                for (let i = 0; i < 8; i++) {
-                    dataAPIAccesAbri.push({
-                        num_box: i + 1,
-                        PuissanceVerte: sourceVerte,
-                        id_statut_box: tabPowerBox[i]
-                    });
-                }
+
+                dataAPIAccesAbri.push({
+                    PuissanceVerte: sourceVerte,
+                    id_statut_box: JSON.stringify(tabPowerBox),
+                    date: date
+                });
+                //console.log(dataAPIAccesAbri[0]);
+                //console.table(dataAPIAccesAbri);
 
                 // Appel de la méthode SendBoxDataInAPIAccesAbri avec le tableau de données en paramètre
                 await this.SendBoxDataToAPI(this.config.APICallbackURLAccesAbris, dataAPIAccesAbri);
