@@ -1,6 +1,7 @@
 {
     "APICallbackURLAccesAbris":"http://192.168.65.105:5001/boxes",
-    "APICallbackURLBDD":"http://192.168.64.88:8080/insert",
+    "oldAPICallbackURLBDD":"http://192.168.64.88:8080/insert",
+    "APICallbackURLBDD":"http://192.168.65.12:8090/insertBox",
     "APICallbackURLuminosite":"http://192.168.65.12:8080/insertLumi",
     "IPNode_js":"192.168.64.88",
     "PortNode_js":1234
