@@ -34,7 +34,7 @@ private:
 
     tcp::endpoint endpoint_; // Point de terminaison TCP représentant l'adresse IP et le port du serveur Node.js
 
-    static const size_t maxQueueSize = 2; // Définir la taille maximale de la file d'attente (ajustable au choix)
+    static const size_t maxQueueSize = 3; // Définir la taille maximale de la file d'attente (ajustable au choix)
     std::deque<std::string> dataQueue_; // File d'attente pour stocker les données à envoyer en cas d'échec d'envoi
 };
 

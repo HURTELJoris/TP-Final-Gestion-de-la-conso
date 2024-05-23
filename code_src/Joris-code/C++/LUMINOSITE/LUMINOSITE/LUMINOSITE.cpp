@@ -78,28 +78,14 @@ bool LUMINOSITE::sendData(tcp::socket& socket) {
     boost::property_tree::ptree data;
 
     // Génération aléatoire des données (en attendant les vraies données de luminosité)
-
-    /*
-    int sourceVerte = rand() % 2;
-    int tabPowerBox[8];
-    for (int i = 0; i < 8; i++) {
-        tabPowerBox[i] = rand() % 2;
-    }
-    */
     // Initialisation du générateur de nombres aléatoires avec le temps actuel
     srand(time(NULL));
     // Génération de la luminosité aléatoire basée sur le temps
     float luminosity = static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / 99999.0f)) + 1.0f;
     std::string DateTime = createDateTime();
     //std::cout << DateTime;
+    
     // Ajout des données à l'objet boost::property_tree::ptree
-
-    /*
-    data.put("sourceVerte", sourceVerte);
-    for (int i = 0; i < 8; i++) {
-        data.put("tabPowerBox." + std::to_string(i), tabPowerBox[i]);
-    }
-    */
     data.put("luminosity", luminosity);
     data.put("date", DateTime);
 
@@ -108,29 +94,36 @@ bool LUMINOSITE::sendData(tcp::socket& socket) {
     boost::property_tree::write_json(ss, data, false);
     std::string jsonData = ss.str();
 
-    // Debogage : affichage des données à envoyer
-    std::cout << std::endl << "Donnees a envoyer : " << std::endl;
-    for (const std::string& data : dataQueue_) {
-        std::cout << data;
-    }
-    std::cout << jsonData;
-    std::cout << std::endl << std::endl;
+
 
     // Si la file d'attente est pleine, retirez l'élément le plus ancien
-    if (dataQueue_.size() >= maxQueueSize) {
+    if (dataQueue_.size() == maxQueueSize) {
         const std::string Olddata = dataQueue_.front();
         dataQueue_.pop_front();
-        std::cout << std::endl << "File d\'attente pleine. " << std::endl << "    Suppression des anciennes donnees : " << std::endl << "    " + Olddata << std::endl << std::endl;
+        std::cout << std::endl << "File d\'attente pleine. " << std::endl << "    Suppression des anciennes donnees : " << std::endl << "    " + Olddata;
     }
 
     // Si la file d'attente n'est pas vide, on ajoute les nouvelles données à la file d'attente
     bool con = true;
     if (!dataQueue_.empty()) {
         dataQueue_.push_back(jsonData);
-        std::cout << "Donnees mises en file d\'attente : " << std::endl << jsonData << std::endl;
+        std::cout << "Donnees mises en file d\'attente : " << std::endl << "    " + jsonData << std::endl;
         jsonData = dataQueue_.front();
         con = false;
     }
+
+    // Debogage : affichage des données à envoyer
+    std::cout << std::endl << "Donnees a envoyer : " << std::endl;
+    for (const std::string& data : dataQueue_) {
+        std::cout << data;
+    }
+    if (dataQueue_.size() == 0) {
+        std::cout << jsonData;
+    }
+        
+    std::cout << std::endl;
+
+
 
     // Envoi des données au serveur Node.js
     boost::system::error_code error;
@@ -145,17 +138,25 @@ bool LUMINOSITE::sendData(tcp::socket& socket) {
 
         std::cerr << "Erreur lors de l\'envoi des donnees au serveur Node.js : " << std::endl << std::endl << error.message() << std::endl << std::endl;
 
-        std::cout << "Stockees : " << std::endl << jsonData;
+        std::cout << "Stockees : " << std::endl;
+        for (const std::string& data : dataQueue_) {
+            std::cout << data;
+        }
+        if (dataQueue_.size() == 0) {
+            std::cout << jsonData;
+        }
 
         return false;
     }
     else {
         std::cout << "Donnees envoyees avec succes" << std::endl;
-
+       
         // On vérifie s'il reste des données dans la file d'attente et on les envoie
         while (!dataQueue_.empty()) {
-            std::string queuedData = dataQueue_.front();
             dataQueue_.pop_front();
+            if (dataQueue_.empty()) { break; }
+            std::string queuedData = dataQueue_.front();
+            
             std::cout << "Envoi des donnees stockees : " << std::endl << queuedData << std::endl;
             boost::asio::write(socket, boost::asio::buffer(queuedData), error);
             if (error) {
