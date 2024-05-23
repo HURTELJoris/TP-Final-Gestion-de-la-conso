@@ -52,13 +52,23 @@ class Compteurs {
             console.log('Connexion socket établie avec les compteurs');
 
             // Gestion des données reçues du code C++
-            let dataReceived = '';
+            
             socket.on('data', (data) => {
 
+                let dataReceived = '';
                 dataReceived += data.toString().split('\n').join('</json>\n<json>');
                 dataReceived += '\n';
                 const jsonData = dataReceived.split('</json>\n<json>').filter(line => line.trim() !== '');
-                const parsedData = jsonData.map(line => JSON.parse(line));
+                //const parsedData = jsonData.map(line => JSON.parse(line));
+
+                const parsedData = jsonData.map(line => {
+                    try {
+                        return JSON.parse(line);
+                    } catch (error) {
+                        console.error('Erreur de parsing JSON:', error.message);
+                        return null;
+                    }
+                }).filter(item => item !== null);
 
                 //console.log(parsedData.length);
                 //console.log('Données reçues des compteurs :', dataReceived);
@@ -275,7 +285,7 @@ class Compteurs {
                     const dataAPI = [];
 
                     dataAPI.push({
-                        powerbox: JSON.stringify(tabPowerBox),
+                        power_box: JSON.stringify(tabPowerBox),
                         source_verte: sourceVerte,
                         date: date,
                         proportion_temp_vert: JSON.stringify(moyennesProportions)
@@ -293,7 +303,6 @@ class Compteurs {
                     });
                     //console.log(dataAPIAccesAbri[0]);
                     //console.table(dataAPIAccesAbri);
-
                     // Appel de la méthode SendBoxDataInAPIToBDD avec le tableau de données en paramètre
                     await this.SendBoxDataToAPI(this.config.APICallbackURLBDD, dataAPI);
                     // Appel de la méthode SendBoxDataInAPIAccesAbri avec le tableau de données en paramètre
