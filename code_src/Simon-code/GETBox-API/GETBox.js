@@ -102,7 +102,7 @@ app.put('/updateBox/:id', (req, res) => {
     return;
   }
 
-  const sql = 'UPDATE `source_verte` SET source_verte = ? WHERE id_box = ?';
+  const sql = 'UPDATE `box` SET source_verte = ? WHERE id_box = ?';
 
   connection.query(sql, [source_verte, id], (err, result) => {
     if (err) {
