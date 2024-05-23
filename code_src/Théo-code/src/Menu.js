@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import './Menu.css'; // Import du fichier CSS
 
 const Menu = ({ onSelect }) => {
-  const options = ['RealTimePowerValues', 'IntensiteEnReel', 'EnergyProductionChart', 'GraphiqueLuminosite', 'UserPowerTracking', 'TableauEDF'];
+  const options = ['PuissanceEnReel', 'IntensiteEnReel', 'GraphiqueEnergie', 'GraphiqueLuminosite', 'UserPowerTracking', 'TableauEDF'];
   const [selectedOption, setSelectedOption] = useState(options[0]);
 
   const handleSelect = (option) => {

@@ -1,15 +1,15 @@
-// App.js
+
 import React, { useState } from 'react';
-import RealTimePowerValues from './components/RealTimePowerValues';
+import PuissanceEnReel from './components/PuissanceEnReel';
 import IntensiteEnReel from './components/IntensiteEnReel';
-import EnergyProductionChart from './components/EnergyProductionChart';
+import GraphiqueEnergie from './components/GraphiqueEnergie';
 import GraphiqueLuminosite from './components/GraphiqueLuminosite';
 import UserPowerTracking from './components/UserPowerTracking';
 import TableauEDF from './components/TableauEDF';
 import Menu from './Menu';
 
 function App() {
-  const [selectedComponent, setSelectedComponent] = useState('RealTimePowerValues');
+  const [selectedComponent, setSelectedComponent] = useState('PuissanceEnReel');
 
   const handleComponentSelect = (component) => {
     setSelectedComponent(component);
@@ -18,9 +18,9 @@ function App() {
   return (
     <div>
       <Menu onSelect={handleComponentSelect} />
-      {selectedComponent === 'RealTimePowerValues' && <RealTimePowerValues />}
+      {selectedComponent === 'PuissanceEnReel' && <PuissanceEnReel />}
       {selectedComponent === 'IntensiteEnReel' && <IntensiteEnReel />}
-      {selectedComponent === 'EnergyProductionChart' && <EnergyProductionChart />}
+      {selectedComponent === 'GraphiqueEnergie' && <GraphiqueEnergie/>}
       {selectedComponent === 'GraphiqueLuminosite' && <GraphiqueLuminosite />}
       {selectedComponent === 'UserPowerTracking' && <UserPowerTracking />}
       {selectedComponent === 'TableauEDF' && <TableauEDF />}
@@ -29,3 +29,28 @@ function App() {
 }
 
 export default App;
+/*
+import React from 'react';
+import RealTimePowerValues from './components/RealTimePowerValues';
+import IntensiteEnReel from './components/IntensiteEnReel';
+import EnergyProductionChart from './components/EnergyProductionChart';
+import GraphiqueLuminosite from './components/GraphiqueLuminosite';
+import UserPowerTracking from './components/UserPowerTracking';
+import TableauEDF from './components/TableauEDF'; 
+
+function App() {
+  return (
+    <div>
+      <RealTimePowerValues />
+      <IntensiteEnReel/>
+      <EnergyProductionChart />
+      <GraphiqueLuminosite /> 
+      <UserPowerTracking />
+      <TableauEDF /> 
+    </div>
+  );
+}
+
+export default App;
+
+*/
