@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const mysql = require('mysql');
 const fs = require('fs');
 const { assert } = require('console');
+const winston = require('winston');
 
 class EnergieRecordAPI {
     constructor(host, user, password, database, port) {
@@ -25,20 +26,27 @@ class EnergieRecordAPI {
         });
 
 
-         // Fichier qui gère les adresses sur lesquelles POST/GET
-         fs.readFile("./config.json", "utf8", (error, data) => {
-            if(error) console.log(error);
+        // Fichier qui gère les adresses sur lesquelles POST/GET
+        fs.readFile("./config.json", "utf8", (error, data) => {
+            if (error) console.log(error);
             assert(!error); // Quitte si erreur de chargement du fichier de configuration.
             this.config = JSON.parse(data);
 
             //console.log(this.config);
         });
-    
+
 
         this.connectToDatabase();
         this.setupRoutes();
 
-
+        this.logger = winston.createLogger({
+            level: 'info',
+            format: winston.format.json(),
+            transports: [
+              new winston.transports.File({ filename: 'error.log', level: 'error' }),
+              new winston.transports.File({ filename: 'combined.log' })
+            ]
+          });
 
     }
 
@@ -79,21 +87,22 @@ class EnergieRecordAPI {
 
     insertBoxData(req) {
         //const { power_box, source_verte, proportion_temp_vert } = req;
-        const power_box = req.powerbox;
+        const power_box = req.power_box;
         const source_verte = req.source_verte;
         const date = req.date;
+        const ratio = req.ratio;
         const proportion_temp_vert = req.proportion_temp_vert;
-        
+
         // Vérifiez si les données nécessaires sont présentes dans la requête
-        if (power_box == null|| source_verte == null || date == null || proportion_temp_vert == null) {
+        if (power_box == null || source_verte == null || date == null || ratio ==null || proportion_temp_vert == null) {
             //return res.status(400).send('Données manquantes');
             console.log('Données manquantes');
             console.log(power_box, source_verte, date, proportion_temp_vert);
         }
 
         this.connection.query(
-            'INSERT INTO `box`(`power_box`, `source_verte`, `date`, `proportion_temp_vert`) VALUES (?, ?, ?, ?)',
-            [power_box, source_verte, date, proportion_temp_vert] /* ,
+            'INSERT INTO `box`(`power_box`, `source_verte`, `date`, `ratio`, `proportion_temp_vert`) VALUES (?, ?, ?, ?, ?)',
+            [power_box, source_verte, date, ratio, proportion_temp_vert] /* ,
             (error, results) => {
                 if (error) {
                     console.error('Erreur lors de l\'exécution de la requête SQL:', error);
@@ -113,7 +122,7 @@ class EnergieRecordAPI {
         const PuissanceVerte = req.PuissanceVerte;
         const id_statut_box = req.id_statut_box;
         const date = req.date;
-        
+
         // Vérifiez si les données nécessaires sont présentes dans la requête
         if (PuissanceVerte == null || id_statut_box == null || date == null) {
             //return res.status(400).send('Données manquantes');
@@ -140,15 +149,44 @@ class EnergieRecordAPI {
 
     setupRoutes() {
 
+        this.app.post('/insertLumi', (req, res) => {
+            //const { luminosite, date } = req.body;
+            //console.log(req.body);
+            
+            req.body.forEach(element => {
+
+                const { luminosite, date } = element;
+                const sql = 'INSERT INTO `capteur-luminosité` (luminosité, date) VALUES (?, ?)';
+
+                this.connection.query(sql, [luminosite, date], (err, result) => {
+                    if (err) {
+                        console.error('Erreur lors de l\'exécution de la requête : ' + err.message);
+                        res.status(500).send('Erreur lors de l\'insertion des données.');
+                        this.logger.error({
+                            message: 'Erreur lors de l\'insertion des données',
+                            error: err
+                        });
+                        return;
+                    };
+
+                    this.logger.info({ message: 'Données insérées avec succès' });
+                });
+            });
+            
+            res.send('Ligne insérée avec succès.');
+        });
+
+
+
         this.app.post('/insert', (req, res) => {
             const data = req.body;
 
             // Créer un nouveau tableau contenant chaque objet sous forme de variable séparée
             const boxes = data.map(item => {
-                const {powerbox, source_verte, date, proportion_temp_vert} = item;
+                const { power_box, source_verte, date, ratio, proportion_temp_vert } = item;
                 //console.log(num_box, powerbox, source_verte, proportion_temp_vert);
-                return {powerbox, source_verte, date, proportion_temp_vert };
-                
+                return { power_box, source_verte, date, ratio, proportion_temp_vert };
+
             });
 
             // Afficher chaque objet dans la console
@@ -160,8 +198,10 @@ class EnergieRecordAPI {
             });
 
             /// AJOUTER PLUS DE STATUT
-            res.status(200).send(`Données insérées avec succès à : ${this.config.APICallbackURLBDD}`);
+            res.status(200).send(`Données insérées avec succès à : ${this.config.oldAPICallbackURLBDD}`);
         });
+
+
 
 
         this.app.post('/insertAcces', (req, res) => {
@@ -169,8 +209,8 @@ class EnergieRecordAPI {
 
             // Créer un nouveau tableau contenant chaque objet sous forme de variable séparée
             const boxes = data.map(item => {
-                const {PuissanceVerte, id_statut_box, date} = item;
-                return {PuissanceVerte, id_statut_box, date};
+                const { PuissanceVerte, id_statut_box, date } = item;
+                return { PuissanceVerte, id_statut_box, date };
             });
 
             // Afficher chaque objet dans la console
@@ -192,6 +232,7 @@ class EnergieRecordAPI {
         });
     }
 }
+
 
 const energieRecordAPI = new EnergieRecordAPI('192.168.64.119', 'root', 'root', 'Conso', 8080);
 energieRecordAPI.listen();
