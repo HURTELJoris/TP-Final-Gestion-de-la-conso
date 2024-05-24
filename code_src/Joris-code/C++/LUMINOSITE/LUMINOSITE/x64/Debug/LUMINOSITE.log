@@ -3,5 +3,5 @@
   - add -D_WIN32_WINNT=0x0601 to the compiler command line; or
   - add _WIN32_WINNT=0x0601 to your project's Preprocessor Definitions.
   Assuming _WIN32_WINNT=0x0601 (i.e. Windows 7 target).
-T:\C++\LUMINOSITE\LUMINOSITE\LUMINOSITE.cpp(90,15): warning C4244: 'argument' : conversion de 'time_t' en 'unsigned int', perte possible de données
+T:\C++\LUMINOSITE\LUMINOSITE\LUMINOSITE.cpp(82,15): warning C4244: 'argument' : conversion de 'time_t' en 'unsigned int', perte possible de données
   LUMINOSITE.vcxproj -> T:\C++\LUMINOSITE\x64\Debug\LUMINOSITE.exe
