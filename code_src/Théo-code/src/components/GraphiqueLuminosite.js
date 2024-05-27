@@ -35,7 +35,21 @@ const GraphiqueLuminosite = () => {
           options: {
             scales: {
               y: {
-                beginAtZero: true
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return value + ' lux'; // Ajout de l'unité "lux" sur les ticks de l'axe y
+                  }
+                }
+              }
+            },
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: function(tooltipItem) {
+                    return tooltipItem.raw + ' lux'; // Ajout de l'unité "lux" dans les infobulles
+                  }
+                }
               }
             }
           }

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import './PuissanceEnReel.css'; // Assurez-vous que le chemin est correct
+import './PuissanceEnReel.css'; 
 
 function PuissanceEnReel() {
-  const [power, setPower] = useState(0);
+  const generateRandomPower = () => (Math.random() * 100).toFixed(2);
+
+  const [power, setPower] = useState(generateRandomPower());
   const [unit, setUnit] = useState('W');
 
   const updatePower = () => {
-    const newPower = Math.random() * 100; // Modifier la plage pour la puissance
-    setPower(newPower.toFixed(2));
+    const newPower = generateRandomPower();
+    setPower(newPower);
   };
 
   useEffect(() => {
@@ -27,8 +29,8 @@ function PuissanceEnReel() {
     case 'kW':
       displayPower = (power / 1000).toFixed(2) + ' kW';
       break;
-    case 'MW':
-      displayPower = (power / 1000000).toFixed(2) + ' MW';
+    case 'mW':
+      displayPower = (power * 1000).toFixed(2) + ' mW';
       break;
     default:
       displayPower = power + ' W';
@@ -41,7 +43,7 @@ function PuissanceEnReel() {
       <p>Unité :
         <button onClick={() => changeUnit('W')}>W</button>
         <button onClick={() => changeUnit('kW')}>kW</button>
-        <button onClick={() => changeUnit('MW')}>MW</button>
+        <button onClick={() => changeUnit('mW')}>mW</button>
       </p>
     </div>
   );

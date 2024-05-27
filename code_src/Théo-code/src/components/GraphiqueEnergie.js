@@ -36,7 +36,21 @@ const GraphiqueEnergie = () => {
           options: {
             scales: {
               y: {
-                beginAtZero: true
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return value + ' kWh'; // Ajout de l'unité "kWh" sur les ticks de l'axe y
+                  }
+                }
+              }
+            },
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: function(tooltipItem) {
+                    return tooltipItem.raw + ' kWh'; // Ajout de l'unité "kWh" dans les infobulles
+                  }
+                }
               }
             }
           }

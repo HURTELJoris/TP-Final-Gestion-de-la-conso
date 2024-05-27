@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import './IntensiteEnReel.css'; // Assurez-vous que le chemin est correct
+import './IntensiteEnReel.css'; 
 
 function IntensiteEnReel() {
-  const [intensity, setIntensity] = useState(0);
+  const generateRandomIntensity = () => (Math.random() * 10).toFixed(2);
+
+  const [intensity, setIntensity] = useState(generateRandomIntensity());
   const [unit, setUnit] = useState('A');
 
   const updateIntensity = () => {
-    const newIntensity = Math.random() * 10;
-    setIntensity(newIntensity.toFixed(2));
+    const newIntensity = generateRandomIntensity();
+    setIntensity(newIntensity);
   };
 
   useEffect(() => {

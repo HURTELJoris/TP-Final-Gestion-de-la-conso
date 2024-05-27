@@ -4,7 +4,7 @@ import PuissanceEnReel from './components/PuissanceEnReel';
 import IntensiteEnReel from './components/IntensiteEnReel';
 import GraphiqueEnergie from './components/GraphiqueEnergie';
 import GraphiqueLuminosite from './components/GraphiqueLuminosite';
-import UserPowerTracking from './components/UserPowerTracking';
+import TableauPanneau from './components/TableauPanneau';
 import TableauEDF from './components/TableauEDF';
 import Menu from './Menu';
 
@@ -22,7 +22,7 @@ function App() {
       {selectedComponent === 'IntensiteEnReel' && <IntensiteEnReel />}
       {selectedComponent === 'GraphiqueEnergie' && <GraphiqueEnergie/>}
       {selectedComponent === 'GraphiqueLuminosite' && <GraphiqueLuminosite />}
-      {selectedComponent === 'UserPowerTracking' && <UserPowerTracking />}
+      {selectedComponent === 'TableauPanneau' && <TableauPanneau />}
       {selectedComponent === 'TableauEDF' && <TableauEDF />}
     </div>
   );

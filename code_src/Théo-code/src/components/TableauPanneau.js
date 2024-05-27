@@ -1,38 +1,38 @@
-// TableauEDF.js
+// TableauPanneau.js
 import React, { useState, useEffect } from 'react';
-import './TableauEDF.css';
+import './TableauPanneau.css';
 
-const TableauEDF = () => {
-  const [consommationEnergie, setConsommationEnergie] = useState(0);
+const TableauPanneau = () => {
+  const [puissanceRecue, setPuissanceRecue] = useState(0);
   const [historique, setHistorique] = useState([]);
   const [afficherHistorique, setAfficherHistorique] = useState(false);
 
   useEffect(() => {
-    // Fonction pour mettre à jour la consommation d'énergie
-    const mettreAJourConsommationEnergie = () => {
-      // Générer des données simulées de consommation d'énergie
-      const energieSimulee = Math.random() * 100 + 50; // Consommation d'énergie aléatoire entre 50 kWh et 150 kWh
+    // Fonction pour mettre à jour la puissance reçue
+    const mettreAJourPuissanceRecue = () => {
+      // Générer des données simulées de puissance reçue
+      const puissanceSimulee = Math.random() * 100 + 50; // Puissance reçue aléatoire entre 50 W et 150 W
       
-      // Ajouter la nouvelle consommation d'énergie à l'historique
+      // Ajouter la nouvelle puissance reçue à l'historique
       setHistorique(prevHistorique => {
         const nouvelHistorique = [...prevHistorique, {
           date: new Date(),
-          valeur: energieSimulee.toFixed(2)
+          valeur: puissanceSimulee.toFixed(2)
         }];
         
         // Conserver uniquement les 10 dernières valeurs dans l'historique
         return nouvelHistorique.slice(-10);
       });
       
-      // Mettre à jour l'état de la consommation d'énergie
-      setConsommationEnergie(energieSimulee.toFixed(2));
+      // Mettre à jour l'état de la puissance reçue
+      setPuissanceRecue(puissanceSimulee.toFixed(2));
     };
 
-    // Mettre à jour la consommation d'énergie initialement
-    mettreAJourConsommationEnergie();
+    // Mettre à jour la puissance reçue initialement
+    mettreAJourPuissanceRecue();
 
-    // Définir un intervalle pour mettre à jour la consommation d'énergie toutes les minutes
-    const intervalle = setInterval(mettreAJourConsommationEnergie, 5000);
+    // Définir un intervalle pour mettre à jour la puissance reçue toutes les minutes
+    const intervalle = setInterval(mettreAJourPuissanceRecue, 5000);
 
     // Nettoyer l'intervalle lors du démontage du composant
     return () => clearInterval(intervalle);
@@ -47,21 +47,21 @@ const TableauEDF = () => {
   };
 
   return (
-    <div className="TableauEDF-container">
-      <h2>Consommation d'énergie EDF</h2>
-      <table className="TableauEDF-table">
+    <div className="TableauPanneau-container">
+      <h2>Suivi de puissance reçue par les panneaux</h2>
+      <table className="TableauPanneau-table">
         <thead>
           <tr>
             <th>Date</th>
             <th>Heure</th>
-            <th>Consommation d'énergie (kWh)</th>
+            <th>Puissance reçue (kWh)</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td>{`${jour} ${mois}`}</td>
             <td>{dateActuelle.toLocaleTimeString()}</td>
-            <td>{consommationEnergie}</td>
+            <td>{puissanceRecue}</td>
           </tr>
           {afficherHistorique && historique.map((item, index) => (
             <tr key={index}>
@@ -72,9 +72,11 @@ const TableauEDF = () => {
           ))}
         </tbody>
       </table>
-      <button onClick={toggleHistorique}>Historique</button>
+      <button onClick={toggleHistorique}>
+        {afficherHistorique ? 'Masquer Historique' : 'Afficher Historique'}
+      </button>
     </div>
   );
 };
 
-export default TableauEDF;
+export default TableauPanneau;
