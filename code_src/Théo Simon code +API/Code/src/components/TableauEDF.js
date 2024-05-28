@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import './TableauPanneau.css';
+import './TableauEDF.css';
 
-const TableauPanneau = () => {
+const TableauEDF = () => {
   const [energieData, setEnergieData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -53,9 +53,9 @@ const TableauPanneau = () => {
   }
 
   return (
-    <div className="TableauPanneau-container">
-      <h2>Suivi de production d'énergie par les panneaux</h2>
-      <div className="TableauPanneau-filters">
+    <div className="TableauEDF-container">
+      <h2>Suivi de consommation d'énergie EDF</h2>
+      <div className="TableauEDF-filters">
         <label>
           Date et heure de début:
           <input type="datetime-local" value={startDate} onChange={handleStartDateChange} />
@@ -65,12 +65,12 @@ const TableauPanneau = () => {
           <input type="datetime-local" value={endDate} onChange={handleEndDateChange} />
         </label>
       </div>
-      <table className="TableauPanneau-table">
+      <table className="TableauEDF-table">
         <thead>
           <tr>
             <th>Date</th>
             <th>Heure</th>
-            <th>Production d'énergie (kWh)</th>
+            <th>Suivi EDF</th>
           </tr>
         </thead>
         <tbody>
@@ -78,7 +78,7 @@ const TableauPanneau = () => {
             <tr key={index}>
               <td>{new Date(item.date).toLocaleDateString()}</td>
               <td>{new Date(item.date).toLocaleTimeString()}</td>
-              <td>{item.production_energie.toFixed(2)}</td>
+              <td>{item.SuiviEdf}</td>
             </tr>
           ))}
         </tbody>
@@ -87,4 +87,4 @@ const TableauPanneau = () => {
   );
 };
 
-export default TableauPanneau;
+export default TableauEDF;

@@ -9,7 +9,7 @@ function PuissanceEnReel() {
 
   const fetchPowerData = async () => {
     try {
-      const response = await fetch('http://192.168.65.12:8060/selectPui');
+      const response = await fetch('http://192.168.65.12:8050/selectPui');
       if (!response.ok) {
         throw new Error('Erreur lors de la récupération des données');
       }

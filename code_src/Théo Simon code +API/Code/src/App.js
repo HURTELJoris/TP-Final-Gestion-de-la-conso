@@ -3,6 +3,9 @@ import GraphiqueLuminosite from './components/GraphiqueLuminosite';
 import PuissanceEnReel from './components/PuissanceEnReel';
 import IntensiteEnReel from './components/IntensiteEnReel';
 import TableauPanneau from './components/TableauPanneau';
+import GraphiqueEnergie from './components/GraphiqueEnergie';
+import TableauEDF from './components/TableauEDF';
+
 
 function App() {
   return (
@@ -11,6 +14,9 @@ function App() {
       <PuissanceEnReel /> {}
       <IntensiteEnReel /> {}
       <TableauPanneau /> {}
+      <GraphiqueEnergie /> {}
+      <TableauEDF /> {}
+      
     </div>
   );
 }

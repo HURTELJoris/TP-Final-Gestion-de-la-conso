@@ -9,7 +9,7 @@ function IntensiteEnReel() {
 
   const fetchIntensityData = async () => {
     try {
-      const response = await fetch('http://192.168.65.12:8060/selectPui'); // Assurez-vous que l'endpoint est correct
+      const response = await fetch('http://192.168.65.12:8050/selectPui'); // Assurez-vous que l'endpoint est correct
       if (!response.ok) {
         throw new Error('Erreur lors de la récupération des données');
       }
