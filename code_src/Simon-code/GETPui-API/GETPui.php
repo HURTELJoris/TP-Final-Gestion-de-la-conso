@@ -12,9 +12,9 @@
         <form id="insert-form">
 
             <label for="id_capteur">ID capteur : </label>
-            <input type="number" id="id_capteur" name="id_capteur" required><br>
+            <select id="id_capteur" name="id_capteur" required></select><br>
 
-            <label for="puissance">Puissance : </label>
+            <label for="puissance">Puissance : </label> 
             <input type="number" id="puissance" name="puissance" required><br>
 
             <label for="intensité">Intensité : </label>
@@ -22,6 +22,12 @@
 
             <label for="production_energie">production d'énergie : </label>
             <input type="number" id="production_energie" name="production_energie" required><br>
+
+            <label for="suivi_edf">Suivi EDF : </label>
+            <input type="number" id="suivi_edf" name="suivi_edf" required><br>
+
+            <label for="date">Date : </label>
+            <input type="datetime-local" id="date" name="date" required><br>
 
             <button type="submit">Ajouter</button>
         </form>
@@ -33,6 +39,8 @@
                 <th>Puissance</th>
                 <th>Intensité</th>
                 <th>production d'énergie</th>
+                <th>Suivi EDF</th>
+                <th>Date</th>
                 <th>Supprimer</th>
                 <th>Modifier</th>
             </tr>
@@ -42,4 +50,4 @@
         <script src="main.js"></script>
 
     </body>
-</html> 
+</html>

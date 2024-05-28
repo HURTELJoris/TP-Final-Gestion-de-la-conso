@@ -4,7 +4,7 @@ const cors = require('cors');
 const winston = require('winston');
 
 const app = express();
-const port = 8070;
+const port = 8050;
 
 const logger = winston.createLogger({
   level: 'info',
@@ -41,16 +41,15 @@ connection.connect((err) => {
     console.error('Erreur de connexion à la base de données : ' + err.stack);
     return;
   }
-  console.log('Connecté à la base de données avec l\'identifiant ' + connection.threadId);
+  console.log('Connecté à la base de données avec l’identifiant ' + connection.threadId);
 });
 
 app.get('/selectPui', (req, res) => {
   const sql = 'SELECT * FROM `panneau-solaire`';
 
-
   connection.query(sql, (err, results) => {
     if (err) {
-      console.error('Erreur lors de l\'exécution de la requête : ' + err.message);
+      console.error('Erreur lors de l’exécution de la requête : ' + err.message);
       res.status(500).send('Erreur lors de la récupération des données.');
       logger.error({
         message: 'Erreur lors de la récupération des données',
@@ -66,25 +65,25 @@ app.get('/selectPui', (req, res) => {
 
 app.post('/insertPui', (req, res) => {
   req.body.forEach(element => {
-    const { id_capteur, puissance, intensité, production_energie } = element;
+    const { id_capteur, puissance, intensité, production_energie, SuiviEdf, date } = element;
 
-    const sql = 'INSERT INTO `panneau-solaire` (id_capteur, puissance, intensité, production_energie) VALUES (?, ?, ?, ?)';
+    const sql = 'INSERT INTO `panneau-solaire` (id_capteur, puissance, intensité, production_energie, SuiviEdf, date) VALUES (?, ?, ?, ?, ?, ?)';
 
-    connection.query(sql, [id_capteur, puissance, intensité, production_energie], (err, result) => {
+    connection.query(sql, [id_capteur, puissance, intensité, production_energie, SuiviEdf, date], (err, result) => {
       if (err) {
-        console.error('Erreur lors de l\'exécution de la requête : ' + err.message);
-        res.status(500).send('Erreur lors de l\'insertion des données.');
+        console.error('Erreur lors de l’exécution de la requête : ' + err.message);
+        res.status(500).send('Erreur lors de l’insertion des données.');
         logger.error({
-          message: 'Erreur lors de l\'insertion des données',
+          message: 'Erreur lors de l’insertion des données',
           error: err
         });
         return;
       };
 
-      res.send('Ligne insérée avec succès.');
       logger.info({ message: 'Données insérées avec succès' });
     });
   });
+  res.send('Ligne insérée avec succès.');
 });
 
 app.put('/updatePui/:id', (req, res) => {
@@ -95,7 +94,7 @@ app.put('/updatePui/:id', (req, res) => {
 
   connection.query(sql, [puissance, id], (err, result) => {
     if (err) {
-      console.error('Erreur lors de l\'exécution de la requête : ' + err.message);
+      console.error('Erreur lors de l’exécution de la requête : ' + err.message);
       res.status(500).send('Erreur lors de la mise à jour des données.');
       logger.error({
         message: 'Erreur lors de la mise à jour des données',
@@ -116,7 +115,7 @@ app.delete('/deletePui/:id', (req, res) => {
 
   connection.query(sql, [id], (err, result) => {
     if (err) {
-      console.error('Erreur lors de l\'exécution de la requête : ' + err.message);
+      console.error('Erreur lors de l’exécution de la requête : ' + err.message);
       res.status(500).send('Erreur lors de la suppression de la ligne.');
       logger.error({
         message: 'Erreur lors de la suppression de la ligne',
@@ -127,6 +126,26 @@ app.delete('/deletePui/:id', (req, res) => {
 
     res.send('Ligne supprimée avec succès.');
     logger.info({ message: 'Données supprimées avec succès' });
+  });
+});
+
+// Nouvelle route pour sélectionner les données de la table "capteur-luminosité"
+app.get('/selectCapteur', (req, res) => {
+  const sql = 'SELECT id_capteur FROM `capteur-luminosité`';
+
+  connection.query(sql, (err, results) => {
+    if (err) {
+      console.error('Erreur lors de l’exécution de la requête : ' + err.message);
+      res.status(500).send('Erreur lors de la récupération des données.');
+      logger.error({
+        message: 'Erreur lors de la récupération des données',
+        error: err
+      });
+      return;
+    }
+
+    res.json(results);
+    logger.info({ message: 'Données sélectionnées avec succès' });
   });
 });
 
