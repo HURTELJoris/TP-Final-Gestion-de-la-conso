@@ -2,18 +2,29 @@ import React, { useState, useEffect } from 'react';
 import './PuissanceEnReel.css'; 
 
 function PuissanceEnReel() {
-  const generateRandomPower = () => (Math.random() * 100).toFixed(2);
-
-  const [power, setPower] = useState(generateRandomPower());
+  const [powerData, setPowerData] = useState([]);
   const [unit, setUnit] = useState('W');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const updatePower = () => {
-    const newPower = generateRandomPower();
-    setPower(newPower);
+  const fetchPowerData = async () => {
+    try {
+      const response = await fetch('http://192.168.65.12:8050/selectPui');
+      if (!response.ok) {
+        throw new Error('Erreur lors de la récupération des données');
+      }
+      const data = await response.json();
+      setPowerData(data);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    const interval = setInterval(updatePower, 5000); // Mettre à jour toutes les 5 secondes
+    fetchPowerData();
+    const interval = setInterval(fetchPowerData, 5000); // Mettre à jour toutes les 5 secondes
     return () => clearInterval(interval);
   }, []);
 
@@ -21,25 +32,35 @@ function PuissanceEnReel() {
     setUnit(newUnit);
   };
 
-  let displayPower;
-  switch (unit) {
-    case 'W':
-      displayPower = power + ' W';
-      break;
-    case 'kW':
-      displayPower = (power / 1000).toFixed(2) + ' kW';
-      break;
-    case 'mW':
-      displayPower = (power * 1000).toFixed(2) + ' mW';
-      break;
-    default:
-      displayPower = power + ' W';
+  const convertPower = (power) => {
+    switch (unit) {
+      case 'kW':
+        return (power / 1000).toFixed(2) + ' kW';
+      case 'mW':
+        return (power * 1000).toFixed(2) + ' mW';
+      default:
+        return power.toFixed(2) + ' W';
+    }
+  };
+
+  if (loading) {
+    return <div>Chargement des données...</div>;
+  }
+
+  if (error) {
+    return <div>Erreur : {error}</div>;
   }
 
   return (
     <div className="puissance-container">
       <h2>Afficher les valeurs de puissance des panneaux photovoltaïques</h2>
-      <p>Puissance en temps réel : {displayPower}</p>
+      <ul>
+        {powerData.map((panneau) => (
+          <li key={panneau.id_panneau}>
+            Capteur ID: {panneau.id_capteur} - Puissance: {convertPower(panneau.puissance)}
+          </li>
+        ))}
+      </ul>
       <p>Unité :
         <button onClick={() => changeUnit('W')}>W</button>
         <button onClick={() => changeUnit('kW')}>kW</button>

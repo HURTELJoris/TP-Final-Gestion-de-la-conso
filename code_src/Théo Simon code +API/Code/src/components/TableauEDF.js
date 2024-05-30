@@ -1,78 +1,88 @@
-// TableauEDF.js
 import React, { useState, useEffect } from 'react';
 import './TableauEDF.css';
 
 const TableauEDF = () => {
-  const [consommationEnergie, setConsommationEnergie] = useState(0);
-  const [historique, setHistorique] = useState([]);
-  const [afficherHistorique, setAfficherHistorique] = useState(false);
+  const [energieData, setEnergieData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
+  const fetchEnergieData = async () => {
+    try {
+      const response = await fetch('http://192.168.65.12:8050/selectPui'); // Assurez-vous que l'endpoint est correct
+      if (!response.ok) {
+        throw new Error('Erreur lors de la récupération des données');
+      }
+      const data = await response.json();
+      setEnergieData(data);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Fonction pour mettre à jour la consommation d'énergie
-    const mettreAJourConsommationEnergie = () => {
-      // Générer des données simulées de consommation d'énergie
-      const energieSimulee = Math.random() * 100 + 50; // Consommation d'énergie aléatoire entre 50 kWh et 150 kWh
-      
-      // Ajouter la nouvelle consommation d'énergie à l'historique
-      setHistorique(prevHistorique => {
-        const nouvelHistorique = [...prevHistorique, {
-          date: new Date(),
-          valeur: energieSimulee.toFixed(2)
-        }];
-        
-        // Conserver uniquement les 10 dernières valeurs dans l'historique
-        return nouvelHistorique.slice(-10);
-      });
-      
-      // Mettre à jour l'état de la consommation d'énergie
-      setConsommationEnergie(energieSimulee.toFixed(2));
-    };
-
-    // Mettre à jour la consommation d'énergie initialement
-    mettreAJourConsommationEnergie();
-
-    // Définir un intervalle pour mettre à jour la consommation d'énergie toutes les minutes
-    const intervalle = setInterval(mettreAJourConsommationEnergie, 5000);
-
-    // Nettoyer l'intervalle lors du démontage du composant
+    fetchEnergieData();
+    const intervalle = setInterval(fetchEnergieData, 5000);
     return () => clearInterval(intervalle);
-  }, []); // Exécuté uniquement lors du montage initial
+  }, []);
 
-  const dateActuelle = new Date();
-  const jour = dateActuelle.getDate();
-  const mois = dateActuelle.toLocaleString('default', { month: 'long' });
-
-  const toggleHistorique = () => {
-    setAfficherHistorique(!afficherHistorique);
+  const handleStartDateChange = (e) => {
+    setStartDate(e.target.value);
   };
+
+  const handleEndDateChange = (e) => {
+    setEndDate(e.target.value);
+  };
+
+  const filteredData = energieData.filter(item => {
+    const itemDate = new Date(item.date);
+    const start = startDate ? new Date(startDate) : new Date('1970-01-01');
+    const end = endDate ? new Date(endDate) : new Date();
+    return itemDate >= start && itemDate <= end;
+  });
+
+  if (loading) {
+    return <div>Chargement des données...</div>;
+  }
+
+  if (error) {
+    return <div>Erreur : {error}</div>;
+  }
 
   return (
     <div className="TableauEDF-container">
-      <h2>Consommation d'énergie EDF</h2>
+      <h2>Suivi de consommation d'énergie EDF</h2>
+      <div className="TableauEDF-filters">
+        <label>
+          Date et heure de début:
+          <input type="datetime-local" value={startDate} onChange={handleStartDateChange} />
+        </label>
+        <label>
+          Date et heure de fin:
+          <input type="datetime-local" value={endDate} onChange={handleEndDateChange} />
+        </label>
+      </div>
       <table className="TableauEDF-table">
         <thead>
           <tr>
             <th>Date</th>
             <th>Heure</th>
-            <th>Consommation d'énergie (kWh)</th>
+            <th>Suivi EDF</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>{`${jour} ${mois}`}</td>
-            <td>{dateActuelle.toLocaleTimeString()}</td>
-            <td>{consommationEnergie}</td>
-          </tr>
-          {afficherHistorique && historique.map((item, index) => (
+          {filteredData.map((item, index) => (
             <tr key={index}>
-              <td>{item.date.toLocaleDateString()}</td>
-              <td>{item.date.toLocaleTimeString()}</td>
-              <td>{item.valeur}</td>
+              <td>{new Date(item.date).toLocaleDateString()}</td>
+              <td>{new Date(item.date).toLocaleTimeString()}</td>
+              <td>{item.SuiviEdf}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      <button onClick={toggleHistorique}>Historique</button>
     </div>
   );
 };
