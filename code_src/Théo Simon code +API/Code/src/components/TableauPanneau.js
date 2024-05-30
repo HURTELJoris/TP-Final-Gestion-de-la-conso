@@ -1,88 +1,80 @@
+// TableauPanneau.js
 import React, { useState, useEffect } from 'react';
 import './TableauPanneau.css';
 
 const TableauPanneau = () => {
-  const [energieData, setEnergieData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-
-  const fetchEnergieData = async () => {
-    try {
-      const response = await fetch('http://192.168.65.12:8050/selectPui'); // Assurez-vous que l'endpoint est correct
-      if (!response.ok) {
-        throw new Error('Erreur lors de la récupération des données');
-      }
-      const data = await response.json();
-      setEnergieData(data);
-      setLoading(false);
-    } catch (err) {
-      setError(err.message);
-      setLoading(false);
-    }
-  };
+  const [puissanceRecue, setPuissanceRecue] = useState(0);
+  const [historique, setHistorique] = useState([]);
+  const [afficherHistorique, setAfficherHistorique] = useState(false);
 
   useEffect(() => {
-    fetchEnergieData();
-    const intervalle = setInterval(fetchEnergieData, 5000);
+    // Fonction pour mettre à jour la puissance reçue
+    const mettreAJourPuissanceRecue = () => {
+      // Générer des données simulées de puissance reçue
+      const puissanceSimulee = Math.random() * 100 + 50; // Puissance reçue aléatoire entre 50 W et 150 W
+      
+      // Ajouter la nouvelle puissance reçue à l'historique
+      setHistorique(prevHistorique => {
+        const nouvelHistorique = [...prevHistorique, {
+          date: new Date(),
+          valeur: puissanceSimulee.toFixed(2)
+        }];
+        
+        // Conserver uniquement les 10 dernières valeurs dans l'historique
+        return nouvelHistorique.slice(-10);
+      });
+      
+      // Mettre à jour l'état de la puissance reçue
+      setPuissanceRecue(puissanceSimulee.toFixed(2));
+    };
+
+    // Mettre à jour la puissance reçue initialement
+    mettreAJourPuissanceRecue();
+
+    // Définir un intervalle pour mettre à jour la puissance reçue toutes les minutes
+    const intervalle = setInterval(mettreAJourPuissanceRecue, 5000);
+
+    // Nettoyer l'intervalle lors du démontage du composant
     return () => clearInterval(intervalle);
-  }, []);
+  }, []); // Exécuté uniquement lors du montage initial
 
-  const handleStartDateChange = (e) => {
-    setStartDate(e.target.value);
+  const dateActuelle = new Date();
+  const jour = dateActuelle.getDate();
+  const mois = dateActuelle.toLocaleString('default', { month: 'long' });
+
+  const toggleHistorique = () => {
+    setAfficherHistorique(!afficherHistorique);
   };
-
-  const handleEndDateChange = (e) => {
-    setEndDate(e.target.value);
-  };
-
-  const filteredData = energieData.filter(item => {
-    const itemDate = new Date(item.date);
-    const start = startDate ? new Date(startDate) : new Date('1970-01-01');
-    const end = endDate ? new Date(endDate) : new Date();
-    return itemDate >= start && itemDate <= end;
-  });
-
-  if (loading) {
-    return <div>Chargement des données...</div>;
-  }
-
-  if (error) {
-    return <div>Erreur : {error}</div>;
-  }
 
   return (
     <div className="TableauPanneau-container">
-      <h2>Suivi de production d'énergie par les panneaux</h2>
-      <div className="TableauPanneau-filters">
-        <label>
-          Date et heure de début:
-          <input type="datetime-local" value={startDate} onChange={handleStartDateChange} />
-        </label>
-        <label>
-          Date et heure de fin:
-          <input type="datetime-local" value={endDate} onChange={handleEndDateChange} />
-        </label>
-      </div>
+      <h2>Suivi de puissance reçue par les panneaux</h2>
       <table className="TableauPanneau-table">
         <thead>
           <tr>
             <th>Date</th>
             <th>Heure</th>
-            <th>Production d'énergie (kWh)</th>
+            <th>Puissance reçue (kWh)</th>
           </tr>
         </thead>
         <tbody>
-          {filteredData.map((item, index) => (
+          <tr>
+            <td>{`${jour} ${mois}`}</td>
+            <td>{dateActuelle.toLocaleTimeString()}</td>
+            <td>{puissanceRecue}</td>
+          </tr>
+          {afficherHistorique && historique.map((item, index) => (
             <tr key={index}>
-              <td>{new Date(item.date).toLocaleDateString()}</td>
-              <td>{new Date(item.date).toLocaleTimeString()}</td>
-              <td>{item.production_energie.toFixed(2)}</td>
+              <td>{item.date.toLocaleDateString()}</td>
+              <td>{item.date.toLocaleTimeString()}</td>
+              <td>{item.valeur}</td>
             </tr>
           ))}
         </tbody>
       </table>
+      <button onClick={toggleHistorique}>
+        {afficherHistorique ? 'Masquer Historique' : 'Afficher Historique'}
+      </button>
     </div>
   );
 };
