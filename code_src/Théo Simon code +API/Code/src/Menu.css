@@ -1,0 +1,42 @@
+
+.menu {
+    background-color: #f4f4f4;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Style pour les éléments de menu */
+  .menu ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .menu li {
+    cursor: pointer;
+    padding: 8px 16px;
+    margin-bottom: 5px;
+    border-radius: 3px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .menu li:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .menu li.selected {
+    background-color: #4caf50;
+    color: white;
+  }
+  
+  /* Style pour le texte du menu */
+  .menu li a {
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  /* Style pour le texte sélectionné */
+  .menu li.selected a {
+    color: white;
+  }
+  
