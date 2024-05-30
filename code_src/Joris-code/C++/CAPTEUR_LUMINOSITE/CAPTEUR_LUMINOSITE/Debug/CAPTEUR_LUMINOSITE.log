@@ -1,0 +1,3 @@
+﻿  capteur_luminosite.cpp
+C:\Users\Formation\OneDrive\Bureau\TP-Final-Gestion-de-la-conso\code_src\Joris-code\C++\CAPTEUR_LUMINOSITE\CAPTEUR_LUMINOSITE\capteur_luminosite.cpp(97,16): warning C4244: 'return' : conversion de 'double' en 'unsigned short', perte possible de données
+  CAPTEUR_LUMINOSITE.vcxproj -> C:\Users\Formation\OneDrive\Bureau\TP-Final-Gestion-de-la-conso\code_src\Joris-code\C++\CAPTEUR_LUMINOSITE\Debug\CAPTEUR_LUMINOSITE.exe
