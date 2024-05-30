@@ -149,6 +149,24 @@ class EnergieRecordAPI {
 
     setupRoutes() {
 
+        this.app.get('/selectRatioFromBox', (req, res) => {
+            const sql = 'SELECT ratio FROM `box` ORDER BY id_box DESC LIMIT 1';
+            this.connection.query(sql, (err, results) => {
+                if (err) {
+                    console.error('Erreur lors de l\'exécution de la requête : ' + err.message);
+                    res.status(500).send({ message: 'Erreur lors de la récupération des données.' });
+                    this.logger.error({
+                        message: 'Erreur lors de la récupération des données',
+                        error: err
+                    });
+                    return;
+                }
+                res.json(results);
+                this.logger.info({ message: 'Données sélectionnées avec succès' });
+            });
+        });
+
+
         this.app.post('/insertLumi', (req, res) => {
             //const { luminosite, date } = req.body;
             //console.log(req.body);
@@ -176,6 +194,46 @@ class EnergieRecordAPI {
             res.send('Ligne insérée avec succès.');
         });
 
+        
+        this.app.get('/selectid_capteurFromLumi', (req, res) => {
+            const sql = 'SELECT id_capteur FROM `capteur-luminosité` ORDER BY id_capteur DESC LIMIT 1';
+            this.connection.query(sql, (err, results) => {
+                if (err) {
+                    console.error('Erreur lors de l\'exécution de la requête : ' + err.message);
+                    res.status(500).send({ message: 'Erreur lors de la récupération des données.' });
+                    this.logger.error({
+                        message: 'Erreur lors de la récupération des données',
+                        error: err
+                    });
+                    return;
+                }
+                res.json(results);
+                this.logger.info({ message: 'Données sélectionnées avec succès' });
+            });
+        });
+
+        this.app.post('/insertPui', (req, res) => {
+            req.body.forEach(element => {
+              const { id_capteur, puissance, intensité, production_energie, SuiviEdf, date } = element;
+          
+              const sql = 'INSERT INTO `panneau-solaire` (id_capteur, puissance, intensité, production_energie, SuiviEdf, date) VALUES (?, ?, ?, ?, ?, ?)';
+          
+              this.connection.query(sql, [id_capteur, puissance, intensité, production_energie, SuiviEdf, date], (err, result) => {
+                if (err) {
+                  console.error('Erreur lors de l’exécution de la requête : ' + err.message);
+                  res.status(500).send('Erreur lors de l’insertion des données.');
+                  this.logger.error({
+                    message: 'Erreur lors de l’insertion des données',
+                    error: err
+                  });
+                  return;
+                };
+          
+                this.logger.info({ message: 'Données insérées avec succès' });
+              });
+            });
+            res.send('Ligne insérée avec succès.');
+          });
 
 
         this.app.post('/insert', (req, res) => {
@@ -201,9 +259,7 @@ class EnergieRecordAPI {
             res.status(200).send(`Données insérées avec succès à : ${this.config.oldAPICallbackURLBDD}`);
         });
 
-
-
-
+        
         this.app.post('/insertAcces', (req, res) => {
             const data = req.body;
 

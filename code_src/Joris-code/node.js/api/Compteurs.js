@@ -5,26 +5,41 @@ const net = require('net');
 
 const fs = require('fs');
 const { assert } = require('console');
+const { resolve } = require('dns');
 
 // Classe Compteurs qui simule les données d'une carte d'entrée/sortie et calcule les proportions de temps vert.
 class Compteurs {
     // Constructeur de la classe Simulateur.
     constructor() {
-        this.proportionsTempVertStockees = [];
-        this.sourceVerteStockees = [];
-        // Taille maximale du tableau de toutes les proportion de temps vert stockées. Ajustable au choix.
-        this.MAX_SIZE = 10;
-        this.previousSourceVerte = null;
-        this.previoustabPowerBox = null;
-        this.config = this.loadConfig();
+        this.proportionsTempVertStockees = []; // Proportions de temps vert stockées
+        this.sourceVerteStockees = []; // Valeurs de source verte stockées
 
-        this.dataAPILumi = [];
-        this.dataAPIBox = [];
-        this.dataAPIAcces = [];
-        this.MAX_SIZE_API = 3;
+        this.MAX_SIZE = 10; // Taille maximale du tableau de toutes les proportion de temps vert stockées. Ajustable au choix.
+        this.previousSourceVerte = null; // Valeur précédente de source verte
+        this.previoustabPowerBox = null; // Valeur précédente des états des PowerBox
+        this.previousDate = null // Valeur précédente de la date
+        this.config = this.loadConfig(); // Configuration chargée depuis le fichier
 
-        // Initialiser les intervalles de reconnexion
-        this.reconnectionIntervals = {};  // Ajouté ici
+        this.dataAPISolarPannel = []; // Données pour l'API des panneaux solaires
+        this.dataAPILumi = []; // Données pour l'API de luminosité
+        this.dataAPIBox = []; // Données pour l'API des PowerBox
+        this.dataAPIAcces = []; // Données pour l'API d'accès
+        this.MAX_SIZE_API = 3; // Taille maximale du tableau des données API
+
+        this.reconnectionIntervals = {}; // Intervalles de reconnexion aux API
+
+        // Variables pour le suivi du temps permettants de calculer les proportions
+        this.firstTimer = null; // Premier temps enregistré
+        this.timer = null; // Temps actuel
+        this.previousTimer = null; // Temps précédent
+        this.timerVert = 0; // Temps passé avec source verte active
+        this.timerTotal = 0; // Temps total écoulé
+    
+
+        this.MoyennetempsPuissanceBox = new Array(8).fill(0); // Moyenne des temps verts pour chaque PowerBox
+        this.tempsPuissanceBox = new Array(8).fill(0); // Temps VERT écoulé pour chaque PowerBox
+
+        this.ratio = null // Valeur du ratio de temps vert
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -57,6 +72,7 @@ class Compteurs {
     */
 
     async ecouterDonneesCpp() {
+
         // Création d'un serveur socket pour écouter les données provenant du code C++
         const server = net.createServer((socket) => {
             console.log('');
@@ -91,24 +107,34 @@ class Compteurs {
 
                         data.sourceVerte = Number(data.sourceVerte);
                         data.tabPowerBox = Object.values(data.tabPowerBox).map(Number);
-
+                        console.log('');
                         console.log('Données reçues des compteurs :');
                         console.table(data);
                         //this.boucle(data);
                     }
 
-                    if (data.luminosity !== undefined) {
+                    if (data.luminosity !== undefined && data.power !== undefined && data.intensity !== undefined) {
 
                         data.luminosity = Number(data.luminosity);
-
+                        data.power = Number(data.power);
+                        data.intensity = Number(data.intensity);
+                        console.log('');
                         console.log('Données reçues du capteur :');
                         console.table(data);
                         //this.boucle(data);
                     }
+                    else if (data.luminosity !== undefined) {
 
-                    if(data.sourceVerte !== undefined || data.tabPowerBox !== undefined || /*Object.values(data.tabPowerBox).every(value => value !== undefined)*/ data.tabPowerBox !== undefined || data.luminosity !== undefined)
+                        data.luminosity = Number(data.luminosity);
+                        console.log('');
+                        console.log('Données reçues de la luminosité :');
+                        console.table(data);
+                        //this.boucle(data);
+                    }
+
+                    if(data.sourceVerte !== undefined || data.tabPowerBox !== undefined || /*Object.values(data.tabPowerBox).every(value => value !== undefined)*/ data.tabPowerBox !== undefined || data.luminosity !== undefined
+                        || data.power !== undefined || data.intensity !== undefined)
                     {
-                        console.log('Envoi des données :');
                         this.boucle(data);
                     }
                 }
@@ -167,85 +193,55 @@ class Compteurs {
     //////////////////////////////////////////////////////////////////////////
 
     /** DESCRIPTION :
-    * Méthode pour calculer les proportions de temps vert en fonction de sourceVerte et tabPowerBox.
-    * Cette méthode stocke les proportions de temps vert calculées, affiche les proportions,
-    * et retourne la moyenne des proportions stockées.
-    *
-    * @param {number} sourceVerte - État de la source verte (0 ou 1).
-    * @param {Array.<number>} tabPowerBox - Tableau représentant l'état des power boxes (0 ou 1).
-    * @returns {Array.<number>} - Tableau des moyennes des proportions de temps vert arrondies à deux décimales.
-*/
-
-    calculerProportionTempVert(sourceVerte, tabPowerBox) {
-        const tempsPuissanceVerte = sourceVerte === 1 ? 5000 : 0;
-        const tempsPuissanceBox = new Array(8).fill(0);
-
-        for (let i = 0; i < tabPowerBox.length; i++) {
-            if (tabPowerBox[i] === 1) {
-                tempsPuissanceBox[i] = 5000;
-            }
-        }
-
-        const proportionsTempVert = tempsPuissanceBox.map((tempsBox) => {
-            if (tempsBox !== 0) {
-                return (tempsPuissanceVerte / tempsBox) * 100;
-            } else {
-                return 0;
-            }
-        });
-
-        const proportionsArrondies = proportionsTempVert.map((proportion) => {
-            return parseFloat(proportion.toFixed(2));
-        });
-
-        if (this.proportionsTempVertStockees.length >= this.MAX_SIZE) {
-            this.proportionsTempVertStockees.pop();
-        }
-        this.proportionsTempVertStockees.unshift(proportionsArrondies);
-
-        console.log(``);
-        console.log(`Proportions de temps vert : ${JSON.stringify(proportionsArrondies)}`);
-        console.log(``);
-        console.log(`Tableau de proportions : ${JSON.stringify(this.proportionsTempVertStockees)}`);
-        console.log(``);
-
-        const moyennesProportions = new Array(8).fill(0);
-        for (let i = 0; i < this.proportionsTempVertStockees.length; i++) {
-            for (let j = 0; j < this.proportionsTempVertStockees[i].length; j++) {
-                moyennesProportions[j] += this.proportionsTempVertStockees[i][j];
-            }
-        }
-        for (let i = 0; i < moyennesProportions.length; i++) {
-            moyennesProportions[i] /= this.proportionsTempVertStockees.length;
-            moyennesProportions[i] = parseFloat(moyennesProportions[i].toFixed(2));
-        }
-
-        console.log(`Moyennes des proportions de temps vert : ${JSON.stringify(moyennesProportions)}`);
-        console.log(``);
-
-        return moyennesProportions;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-
-    /** DESCRIPTION :
-        * Calcule la moyenne des valeurs de sourceVerte stockées.
+        * Méthode pour calculer les proportions du temps vert pour chaque PowerBox.
         *
-        * Cette méthode parcourt toutes les valeurs de sourceVerte stockées, 
-        * calcule leur somme et retourne la moyenne de ces valeurs, arrondie à deux décimales.
-        * Si aucune valeur n'est stockée, elle retourne 0.
+        * Cette méthode calcule la proportion du temps passé avec des PowerBox vertes, ainsi que les moyennes
+        * pour chaque PowerBox. Les proportions et les moyennes sont mises à jour en fonction des données reçues.
         *
-        * @returns {number} - La moyenne des valeurs de sourceVerte arrondie à deux décimales.
+        * @param {Array} tabPowerBox - Tableau des états des PowerBox.
+        * @returns {Object} - Un objet contenant la proportion du temps vert global et les moyennes des temps
+        * verts pour chaque PowerBox.
     */
 
-    calculerMoyennesTempVert() {
-        if (this.sourceVerteStockees.length === 0) {
-            return 0;  // Eviter la division par zéro
+    calculerProportions(tabPowerBox) {
+        const elapsedTime = (this.timer - (this.previousTimer || this.firstTimer)) / 1000;
+    
+        // Calculer la proportion du temps passé sur les PowerBox vertes
+        for (let i = 0; i < tabPowerBox.length; i++) {
+            if (tabPowerBox[i] === 1 && this.previousSourceVerte === 1) {
+                this.tempsPuissanceBox[i] += elapsedTime;
+                this.tempsPuissanceBox[i] = parseFloat(this.tempsPuissanceBox[i].toFixed(2));
+            }
         }
-        
-        const somme = this.sourceVerteStockees.reduce((acc, val) => acc + val, 0);
-        const moyenne = somme / this.sourceVerteStockees.length * 100;
-        return parseFloat(moyenne.toFixed(2));
+    
+        // Calculer la proportion du temps total passé sur les PowerBox vertes
+        if (this.previousSourceVerte === 1) {
+            this.timerVert += elapsedTime;
+        }
+    
+        this.timerTotal += elapsedTime;
+    
+        // Mettre à jour le timer précédent
+        this.previousTimer = this.timer;
+    
+        // Calculer la proportion du temps vert global
+        const proportionTempsVert = ((this.timerVert.toFixed(2) / this.timerTotal.toFixed(2)) * 100) || 0;
+    
+        // Calculer la moyenne de chaque PowerBox verte
+        for (let i = 0; i < tabPowerBox.length; i++) {
+            this.MoyennetempsPuissanceBox[i] = (this.tempsPuissanceBox[i] / this.timerTotal.toFixed(2)) * 100;
+            this.MoyennetempsPuissanceBox[i] = parseFloat(this.MoyennetempsPuissanceBox[i].toFixed(2)) || 0;
+        }
+    
+        //console.log(`Temps VERT depuis la première lecture : ${this.timerVert.toFixed(2)} secondes`);
+        //console.log(`tempsPuissanceBox depuis la première lecture :  ${JSON.stringify(this.tempsPuissanceBox)} secondes`);
+        //console.log(`Temps total écoulé depuis la première lecture : ${this.timerTotalBOX.toFixed(2)||0} secondes`);
+        //console.log(`MoyennetempsPuissanceBox depuis la première lecture : ${JSON.stringify(this.MoyennetempsPuissanceBox)} %`);
+    
+        return {
+            proportionTempsVert: parseFloat(proportionTempsVert.toFixed(2)),
+            MoyennetempsPuissanceBox: this.MoyennetempsPuissanceBox
+        };
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -300,7 +296,7 @@ class Compteurs {
     
         reach.push(data);
     
-        console.log(`${dataKey} : `, reach);
+        //console.log(`${dataKey} : `, reach);
 
         if (await this.SendBoxDataToAPI(this.config[configKey], reach, dataKey)) {
             reach.length = 0;
@@ -337,10 +333,12 @@ class Compteurs {
         try {
 
             //console.log('data :',dataCPP);
+            const date = new Date(dataCPP.date);
 
-            // Si les données du capteur de luminosité sont connues
+            // Si les données de luminosité sont connues
             if(dataCPP.luminosity !== undefined && dataCPP.date !== undefined)
             {
+                console.log('Envoi des données :');
                 if (await this.queue(
                     { luminosite: dataCPP.luminosity, date: dataCPP.date },
                     this.dataAPILumi,
@@ -351,19 +349,67 @@ class Compteurs {
                 }
             }
 
+            // Si les données du capteur de luminosité sont connues
+            if(dataCPP.power !== undefined && dataCPP.intensity !== undefined && dataCPP.date !== undefined && this.previousDate !== null && this.previousDate !== date)
+            { /*dataCPP.energy !== undefined && dataCPP.EDF !== undefined*/
+                if(this.ratio == null)
+                {
+                    const response = await axios.get(this.config.oldAPIGETURLBDD);
+                    this.ratio = response.data[0].ratio;
+                }
+                //console.log('this.ratio : ',this.ratio);
+
+                if(this.id_capteur == null)
+                {
+                    const response = await axios.get(this.config.oldAPIGETURLLuminosite);
+                    this.id_capteur = response.data[0].id_capteur;
+                }
+                //console.log('this.id_capteur : ',this.id_capteur);
+
+                const difference_date = (date - this.previousDate) / 1000; 
+                //console.log('difference_date (s): ',difference_date);
+
+                let energiepanneaux = dataCPP.power * (3600 / difference_date);
+                energiepanneaux = parseFloat(energiepanneaux.toFixed(3));
+                //console.log('energiepanneaux : ', energiepanneaux, 'W/h');
+
+                let energieEDF = energiepanneaux * (this.ratio / 100 * 2);
+                energieEDF = parseFloat(energieEDF.toFixed(3));
+                //console.log('energieEDF : ', energieEDF, 'W/h');
+
+                console.log('Envoi des données :');
+                if (await this.queue(
+                    { id_capteur: this.id_capteur, puissance: dataCPP.power, intensité: dataCPP.intensity, production_energie: energiepanneaux, SuiviEdf: energieEDF, date: dataCPP.date },
+                    this.dataAPISolarPannel,
+                    'oldAPICallbackURCapteurLuminosite',
+                    'SolarPannelQueue'
+                )) {
+                    this.dataAPISolarPannel = [];
+                    this.ratio = null;
+                    this.id_capteur = null;
+                }
+            }
+
             // Si les données des box sont connues
             if(dataCPP.sourceVerte !== undefined && Object.values(dataCPP.tabPowerBox).every(value => value !== undefined && dataCPP.date !== undefined))
             {
                 //console.log('typeof (sourceVerte)', typeof (sourceVerte));
                 //console.log('data.sourceVerte', dataCPP.sourceVerte);
                 //console.log('data.sourceVerte', dataCPP.sourceVerte !== null);
-                const {sourceVerte, tabPowerBox, date} = dataCPP;
+                const {sourceVerte,tabPowerBox, date} = dataCPP;
                 /* 
                     console.log(``);
                     console.log(`Valeur de sourceVerte : ${sourceVerte}`);
                     console.log(`Valeurs de tabPowerBox : ${JSON.stringify(tabPowerBox)}`);
                     console.log(``);
                 */
+              
+                const datee = new Date(date);
+       
+                this.previousSourceVerte ??= sourceVerte;
+                this.firstTimer ??= datee;
+                this.previousTimer ??= datee;
+                this.timer = datee;
 
                 // Ajouter la nouvelle valeur de sourceVerte au tableau
                 this.sourceVerteStockees.push(sourceVerte);
@@ -371,30 +417,23 @@ class Compteurs {
                     this.sourceVerteStockees.shift();  // Maintenir la taille du tableau
                 }
 
-                const moyennesProportions = this.calculerProportionTempVert(sourceVerte, tabPowerBox);
-   
-
-                // Calculer la moyenne des valeurs de sourceVerte
-                const moyenneSourceVerte = this.calculerMoyennesTempVert();
-                console.log(`Moyenne des valeurs de sourceVerte : ${moyenneSourceVerte}`);
-
-
-
-                console.log(`Moyennes des proportions de temps vert : ${JSON.stringify(moyennesProportions)}`);
-                console.log(``);
+                const {proportionTempsVert, MoyennetempsPuissanceBox} = this.calculerProportions(tabPowerBox);
+                
+                console.log(`Moyenne des valeurs de sourceVerte : ${proportionTempsVert}%`);
+                console.log(`Moyennes des proportions de temps vert : ${JSON.stringify(MoyennetempsPuissanceBox)}`);
 
                 // Vérifier si la valeur de sourceVerte a changé. Si oui, on ajoute les données en BDD grâce à l'API de Simon.
                 if (this.previousSourceVerte !== null && this.previousSourceVerte !== sourceVerte && this.previoustabPowerBox !== null) {
-
                     console.log(`La valeur de sourceVerte a changé : ${this.previousSourceVerte} -> ${sourceVerte}`);
-
+                    console.log('');
+                    console.log('Envoi des données :');
                     if (await this.queue(
                         {   
                             power_box: JSON.stringify(tabPowerBox), 
                             source_verte: sourceVerte,
                             date: date,
-                            ratio:moyenneSourceVerte,
-                            proportion_temp_vert: JSON.stringify(moyennesProportions) 
+                            ratio:proportionTempsVert,
+                            proportion_temp_vert: JSON.stringify(MoyennetempsPuissanceBox) 
                         },
                         this.dataAPIBox,
                         'oldAPICallbackURLBDD',
@@ -403,7 +442,7 @@ class Compteurs {
                         this.dataAPIBox = [];
                     }
 
-                    /* A REMETTRE POUR HASSAN :  
+                    // A REMETTRE POUR HASSAN :  
                     if (await this.queue(
                         {   
                             greenEnergy: sourceVerte,
@@ -416,7 +455,7 @@ class Compteurs {
                     )) {
                         this.dataAPIAcces = [];
                     }
-                    */
+                    
                 
                 } 
 
@@ -425,7 +464,9 @@ class Compteurs {
                 {
                     console.log(`Une des valeurs a changé : ${this.previousSourceVerte} -> ${sourceVerte}`);
                     console.log(`Une des valeurs a changé : ${JSON.stringify(this.previoustabPowerBox)} -> ${JSON.stringify(tabPowerBox)}`);
-                    /* A REMETTRE POUR HASSAN :  
+                    console.log('');
+                    console.log('Envoi des données :');
+                    // A REMETTRE POUR HASSAN :  
                     if (await this.queue(
                         {   
                             greenEnergy: sourceVerte,
@@ -438,7 +479,7 @@ class Compteurs {
                     )) {
                         this.dataAPIAcces = [];
                     }
-                    */
+                    
                 }
                 else 
                 {
@@ -448,19 +489,37 @@ class Compteurs {
                 this.previousSourceVerte = sourceVerte;
                 this.previoustabPowerBox = tabPowerBox;
             }
-            
+            this.previousDate = date;
+
         } catch (error) {
             console.error('Erreur lors de la réception des données provenant du code C++ :', error.message);
             return;
         }
     }
 
+    async caca()
+    {
+        try {
+           
+            const response = await axios.get(this.config.oldAPIGETURLBDD);
+            let donnees = response.data[0].ratio;
+            console.log('Données : ',donnees);
+            return 1;
+        } catch (error) {
+            console.error(`Erreur lors de la communication avec l\'API :`, error.message);
+            console.log('');
+            return 0;
+        }
+    }
+
 // FIN DE LA CLASSE COMPTEURS
 }
 
-//////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
 
 //Création d'une instance de la classe Compteurs et démarrage de la récupération des données des compteurs.
 
 const compteurs = new Compteurs();
 compteurs.ecouterDonneesCpp();
+//compteurs.caca();
+
