@@ -4,15 +4,17 @@ document.getElementById('insert-form').addEventListener('submit', async (event) 
   const power_box = document.getElementById('power_box').value;
   const source_verte = document.getElementById('source_verte').value;
   const date = document.getElementById('date').value;
+  const ratio = document.getElementById('ratio').value;
   const proportion_temp_vert = document.getElementById('proportion_temp_vert').value;
 
   try {
-    const response = await fetch('http://localhost:8090/insertBox', {
+    const response = await fetch('http://localhost:8020/api/insertBox', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'x-api-key': 'root' // Inclusion du mot clé dans l'en-tête
       },
-      body: JSON.stringify({ power_box, source_verte, date, proportion_temp_vert })
+      body: JSON.stringify([{ power_box, source_verte, date,ratio, proportion_temp_vert }])
     });
 
     if (response.ok) {
@@ -27,7 +29,12 @@ document.getElementById('insert-form').addEventListener('submit', async (event) 
 
 async function deleteRow(id) {
   try {
-    const response = await fetch(`http://localhost:8090/deleteBox/${id}`, { method: 'DELETE' });
+    const response = await fetch(`http://localhost:8020/api/deleteBox/${id}`,{
+      method: 'DELETE',
+      headers: {
+          'x-api-key': 'root' // Inclusion du mot clé dans l'en-tête
+      }
+  });
     if (response.ok) {
       location.reload(); // Recharge la page pour mettre à jour le tableau
     } else {
@@ -40,10 +47,11 @@ async function deleteRow(id) {
 
 async function updateLuminosite(id, source_verte) {
   try {
-    const response = await fetch(`http://localhost:8090/updateBox/${id}`, {
+    const response = await fetch(`http://localhost:8020/api/updateBox/${id}`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'x-api-key': 'root' // Inclusion du mot clé dans l'en-tête
       },
       body: JSON.stringify({ source_verte }) // Mettre à jour le nom de la propriété ici
     });
@@ -61,8 +69,11 @@ async function updateLuminosite(id, source_verte) {
 // Récupération et affichage des données initiales
 (async function () {
   try {
-    const response = await fetch('http://localhost:8090/selectBox');
-
+    const response = await fetch('http://localhost:8020/api/selectBox',{
+      headers: {
+        'x-api-key': 'root' // Inclusion du mot clé dans l'en-tête
+    }
+  });
     if (response.ok) {
       const data = await response.json();
       const table = document.getElementById('capteurs-table');
@@ -81,6 +92,9 @@ async function updateLuminosite(id, source_verte) {
 
         const dateCell = newRow.insertCell();
         dateCell.textContent = row.date;
+
+        const ratioCell = newRow.insertCell();
+        ratioCell.textContent = row.ratio;
 
         const tempCell = newRow.insertCell();
         tempCell.textContent = row.proportion_temp_vert;

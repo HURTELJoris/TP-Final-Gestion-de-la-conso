@@ -9,10 +9,11 @@ document.getElementById('insert-form').addEventListener('submit', async (event) 
   const date = document.getElementById('date').value;
 
   try {
-    const response = await fetch('http://192.168.65.12:8050/insertPui', {
+    const response = await fetch('http://192.168.65.12:8050/api/insertPui', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'x-api-key': 'root' // Inclusion du mot clé dans l'en-tête
       },
       body: JSON.stringify([{ id_capteur: id_capteur, puissance: puissance, intensité: intensité, production_energie: production_energie, SuiviEdf: SuiviEdf, date: date }], null, 2)
     });
@@ -29,10 +30,11 @@ document.getElementById('insert-form').addEventListener('submit', async (event) 
 
 async function deleteRow(id) {
   try {
-    const response = await fetch('http://192.168.65.12:8050/deletePui/' + id, {
+    const response = await fetch('http://192.168.65.12:8050/api/deletePui/' + id, {
       method: 'DELETE',
       headers: {
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'x-api-key': 'root' // Inclusion du mot clé dans l'en-tête
       }
     });
 
@@ -48,10 +50,11 @@ async function deleteRow(id) {
 
 async function updateLuminosite(id, puissance) {
   try {
-    const response = await fetch(`http://192.168.65.12:8050/updatePui/${id}`, {
+    const response = await fetch(`http://192.168.65.12:8050/api/updatePui/${id}`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'x-api-key': 'root' // Inclusion du mot clé dans l'en-tête
       },
       body: JSON.stringify({ puissance: puissance }, null, 2)
     });
@@ -69,9 +72,10 @@ async function updateLuminosite(id, puissance) {
 // Récupération et affichage des données initiales
 (async function () {
   try {
-    const response = await fetch('http://192.168.65.12:8050/selectPui', {
+    const response = await fetch('http://192.168.65.12:8050/api/selectPui', {
       headers: {
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'x-api-key': 'root' // Inclusion du mot clé dans l'en-tête
       }
     });
 
@@ -131,9 +135,10 @@ async function updateLuminosite(id, puissance) {
 // Récupération et affichage des données pour le select "id_capteur"
 (async function () {
   try {
-    const response = await fetch('http://192.168.65.12:8050/selectCapteur', {
+    const response = await fetch('http://192.168.65.12:8050/api/selectCapteur', {
       headers: {
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'x-api-key': 'root' // Inclusion du mot clé dans l'en-tête
       }
     });
 
