@@ -177,9 +177,16 @@ class Compteurs {
     async SendBoxDataToAPI(config, data, dataKey) {
         //console.log(data);
         //console.log(config);
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'x-api-key': 'root' // Remplacez 'root' par votre clé d'API
+        };
+
+
         try {
             // Envoi d'une requête POST à l'API avec les données de box
-            const response = await axios.post(config, data); // Changer le chemin lorsque Simon et Hassan auront fait le code pour la box
+            const response = await axios.post(config, data, { headers }); // Changer le chemin lorsque Simon et Hassan auront fait le code pour la box
             
             console.log(`Réponse de l\'API (${dataKey}) :`, response.data);
             return 1;
@@ -342,7 +349,7 @@ class Compteurs {
                 if (await this.queue(
                     { luminosite: dataCPP.luminosity, date: dataCPP.date },
                     this.dataAPILumi,
-                    'oldAPICallbackURLuminosite',
+                    'APICallbackURLuminosite',
                     'luminosityQueue'
                 )) {
                     this.dataAPILumi = [];
@@ -443,6 +450,7 @@ class Compteurs {
                     }
 
                     // A REMETTRE POUR HASSAN :  
+                    /* 
                     if (await this.queue(
                         {   
                             greenEnergy: sourceVerte,
@@ -455,7 +463,7 @@ class Compteurs {
                     )) {
                         this.dataAPIAcces = [];
                     }
-                    
+                    */
                 
                 } 
 
@@ -467,6 +475,7 @@ class Compteurs {
                     console.log('');
                     console.log('Envoi des données :');
                     // A REMETTRE POUR HASSAN :  
+                    /* 
                     if (await this.queue(
                         {   
                             greenEnergy: sourceVerte,
@@ -479,7 +488,7 @@ class Compteurs {
                     )) {
                         this.dataAPIAcces = [];
                     }
-                    
+                    */
                 }
                 else 
                 {
@@ -497,21 +506,6 @@ class Compteurs {
         }
     }
 
-    async caca()
-    {
-        try {
-           
-            const response = await axios.get(this.config.oldAPIGETURLBDD);
-            let donnees = response.data[0].ratio;
-            console.log('Données : ',donnees);
-            return 1;
-        } catch (error) {
-            console.error(`Erreur lors de la communication avec l\'API :`, error.message);
-            console.log('');
-            return 0;
-        }
-    }
-
 // FIN DE LA CLASSE COMPTEURS
 }
 
@@ -521,5 +515,3 @@ class Compteurs {
 
 const compteurs = new Compteurs();
 compteurs.ecouterDonneesCpp();
-//compteurs.caca();
-

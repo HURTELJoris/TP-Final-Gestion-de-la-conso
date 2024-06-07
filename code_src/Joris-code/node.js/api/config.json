@@ -3,21 +3,21 @@
 
 
     "oldAPICallbackURLBDD":"http://192.168.64.88:8080/insert",
-    "APICallbackURLBDD":"http://192.168.65.12:8050/insertBox",
+    "APICallbackURLBDD":"http://192.168.65.12:8020/api/insertBox",
 
     "oldAPIGETURLBDD":"http://192.168.64.88:8080/selectRatioFromBox",
-    "APIGETURLBDD":"http://192.168.65.12:8050/selectRatioFromBox",
+    "APIGETURLBDD":"http://192.168.65.12:8020/api/selectRatioFromBox",
 
 
     "oldAPICallbackURLuminosite":"http://192.168.64.88:8080/insertLumi",
-    "APICallbackURLuminosite":"http://192.168.65.12:8080/insertLumi",
+    "APICallbackURLuminosite":"http://192.168.65.12:8010/api/insertLumi",
 
     "oldAPIGETURLLuminosite":"http://192.168.64.88:8080/selectid_capteurFromLumi",
-    "APIGETURLLuminosite":"http://192.168.65.12:8080/selectid_capteurFromLumi",
+    "APIGETURLLuminosite":"http://192.168.65.12:8010/api/selectid_capteurFromLumi",
 
 
     "oldAPICallbackURCapteurLuminosite":"http://192.168.64.88:8080/insertPui",
-    "APICallbackURCapteurLuminosite":"http://192.168.65.12:8050/insertPui",
+    "APICallbackURCapteurLuminosite":"http://192.168.65.12:8050/api/insertPui",
 
 
     "IPNode_js":"192.168.64.88",
