@@ -6,6 +6,10 @@ const winston = require('winston');
 const app = express();
 const port = 8050;
 
+const config = {
+  apiKey: 'root'
+};
+
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.json(),
@@ -15,8 +19,28 @@ const logger = winston.createLogger({
   ]
 });
 
+function apiKeyMiddleware(req, res, next) {
+  const apiKey = req.headers['x-api-key'] || req.query.apiKey;
+
+  if (!apiKey || apiKey !== config.apiKey) {
+    res.status(401).json({ message: 'Mot clé API invalide' });
+    logger.error({
+      message: 'Mot clé API invalide',
+      ip: req.ip,
+      method: req.method,
+      url: req.url,
+      headers: req.headers,
+      body: req.body
+    });
+    return;
+  }
+
+  next();
+}
+
 app.use(cors());
 app.use(express.json());
+app.use('/api', apiKeyMiddleware);
 
 app.use((req, res, next) => {
   logger.info({
@@ -44,7 +68,7 @@ connection.connect((err) => {
   console.log('Connecté à la base de données avec l’identifiant ' + connection.threadId);
 });
 
-app.get('/selectPui', (req, res) => {
+app.get('/api/selectPui', (req, res) => {
   const sql = 'SELECT * FROM `panneau-solaire`';
 
   connection.query(sql, (err, results) => {
@@ -63,7 +87,7 @@ app.get('/selectPui', (req, res) => {
   });
 });
 
-app.post('/insertPui', (req, res) => {
+app.post('/api/insertPui', (req, res) => {
   req.body.forEach(element => {
     const { id_capteur, puissance, intensité, production_energie, SuiviEdf, date } = element;
 
@@ -86,7 +110,7 @@ app.post('/insertPui', (req, res) => {
   res.send('Ligne insérée avec succès.');
 });
 
-app.put('/updatePui/:id', (req, res) => {
+app.put('/api/updatePui/:id', (req, res) => {
   const id = req.params.id;
   const { puissance } = req.body;
 
@@ -108,7 +132,7 @@ app.put('/updatePui/:id', (req, res) => {
   });
 });
 
-app.delete('/deletePui/:id', (req, res) => {
+app.delete('/api/deletePui/:id', (req, res) => {
   const id = req.params.id;
 
   const sql = 'DELETE FROM `panneau-solaire` WHERE id_panneau = ?';
@@ -130,7 +154,7 @@ app.delete('/deletePui/:id', (req, res) => {
 });
 
 // Nouvelle route pour sélectionner les données de la table "capteur-luminosité"
-app.get('/selectCapteur', (req, res) => {
+app.get('/api/selectCapteur', (req, res) => {
   const sql = 'SELECT id_capteur FROM `capteur-luminosité`';
 
   connection.query(sql, (err, results) => {

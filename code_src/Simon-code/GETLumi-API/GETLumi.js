@@ -4,7 +4,11 @@ const cors = require('cors');
 const winston = require('winston');
 
 const app = express();
-const port = 8080;
+const port = 8010;
+
+const config = {
+  apiKey: 'root'
+};
 
 const logger = winston.createLogger({
   level: 'info',
@@ -15,8 +19,28 @@ const logger = winston.createLogger({
   ]
 });
 
+function apiKeyMiddleware(req, res, next) {
+  const apiKey = req.headers['x-api-key'] || req.query.apiKey;
+
+  if (!apiKey || apiKey !== config.apiKey) {
+    res.status(401).json({ message: 'Mot clé API invalide' });
+    logger.error({
+      message: 'Mot clé API invalide',
+      ip: req.ip,
+      method: req.method,
+      url: req.url,
+      headers: req.headers,
+      body: req.body
+    });
+    return;
+  }
+
+  next();
+}
+
 app.use(cors());
 app.use(express.json());
+app.use('/api', apiKeyMiddleware);
 
 app.use((req, res, next) => {
   logger.info({
@@ -44,8 +68,8 @@ connection.connect((err) => {
   console.log('Connecté à la base de données avec l\'identifiant ' + connection.threadId);
 });
 
-app.get('/selectLumi', (req, res) => {
-  const sql = 'SELECT id_capteur, luminosité, date FROM `capteur-luminosité` WHERE id_capteur != 1';
+app.get('/api/selectLumi', (req, res) => {
+  const sql = 'SELECT id_capteur, luminosité, date FROM `capteur-luminosité`';
 
   connection.query(sql, (err, results) => {
     if (err) {
@@ -63,35 +87,50 @@ app.get('/selectLumi', (req, res) => {
   });
 });
 
-app.post('/insertLumi', (req, res) => {
-  //const { luminosite, date } = req.body;
-  //console.log(req.body);
-  req.body.forEach(element => {
-  const{luminosite,date}=element;
-  console.log('');
-  console.log('date :',date);
-  console.log('luminosité :',luminosite);
-
-    const sql = 'INSERT INTO `capteur-luminosité` (luminosité, date) VALUES (?, ?)';
-
-  connection.query(sql, [luminosite, date], (err, result) => {
+app.get('/api/selectid_capteurFromLumi', (req, res) => {
+  const sql = 'SELECT id_capteur FROM `capteur-luminosité` ORDER BY id_capteur DESC LIMIT 1';
+  connection.query(sql, (err, results) => {
     if (err) {
       console.error('Erreur lors de l\'exécution de la requête : ' + err.message);
-      res.status(500).send('Erreur lors de l\'insertion des données.');
+      res.status(500).send({ message: 'Erreur lors de la récupération des données.' });
       logger.error({
-        message: 'Erreur lors de l\'insertion des données',
+        message: 'Erreur lors de la récupération des données',
         error: err
       });
       return;
-    };
-
-    res.send('Ligne insérée avec succès.');
-    logger.info({ message: 'Données insérées avec succès' });
-  });
+    }
+    res.json(results);
+    logger.info({ message: 'Données sélectionnées avec succès' });
   });
 });
 
-app.put('/updateLumi/:id', (req, res) => {
+app.post('/api/insertLumi', (req, res) => {
+  req.body.forEach(element => {
+    const { luminosite, date } = element;
+    console.log('');
+    console.log('date :', date);
+    console.log('luminosité :', luminosite);
+
+    const sql = 'INSERT INTO `capteur-luminosité` (luminosité, date) VALUES (?, ?)';
+
+    connection.query(sql, [luminosite, date], (err, result) => {
+      if (err) {
+        console.error('Erreur lors de l\'exécution de la requête : ' + err.message);
+        res.status(500).send('Erreur lors de l\'insertion des données.');
+        logger.error({
+          message: 'Erreur lors de l\'insertion des données',
+          error: err
+        });
+        return;
+      };
+
+      logger.info({ message: 'Données insérées avec succès' });
+    });
+  });
+  res.send('Ligne insérée avec succès.');
+});
+
+app.put('/api/updateLumi/:id', (req, res) => {
   const id = req.params.id;
   const { luminosite } = req.body;
 
@@ -113,7 +152,7 @@ app.put('/updateLumi/:id', (req, res) => {
   });
 });
 
-app.delete('/deleteLumi/:id', (req, res) => {
+app.delete('/api/deleteLumi/:id', (req, res) => {
   const id = req.params.id;
 
   const sql = 'DELETE FROM `capteur-luminosité` WHERE id_capteur = ?';
